@@ -1,0 +1,9 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,mean_request_latency_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+sibling-lookahead,0,455,balanced,7,4,147.345364,56.783978,4567,4300,1920,1920,True,True,4,3,0,0,0,1.0
+sibling-lookahead,1,630,broad,10,6,102.956381,41.850338,4417,3909,10,10,True,True,6,4,0,0,0,1.0
+sibling-lookahead,2,830,chain,6,1,204.394356,34.062275,4155,3735,,1128,False,False,0,5,0,0,0,0.0
+sibling-lookahead,3,947,skewed,9,4,177.905008,40.173657,5554,2909,13,13,True,True,4,5,0,0,0,1.0
+sibling-lookahead,4,1027,balanced,7,4,131.675715,50.969944,3623,4388,12,12,True,True,3,3,1,1,0,0.75
+sibling-lookahead,5,1291,broad,10,6,110.790831,44.581446,3416,3640,27,27,True,True,3,4,0,0,0,0.5
+sibling-lookahead,6,1310,chain,6,1,203.083175,33.843933,4239,3302,64,64,True,True,1,5,0,0,0,1.0
+sibling-lookahead,7,1318,skewed,9,4,176.870204,45.162687,4193,4241,14,14,True,True,4,5,0,0,0,1.0

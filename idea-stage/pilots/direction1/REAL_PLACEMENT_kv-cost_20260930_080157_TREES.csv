@@ -1,0 +1,9 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,mean_request_latency_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+kv-cost,0,455,balanced,7,4,112.946728,44.687538,4567,4167,1920,1920,True,True,4,3,0,0,0,1.0
+kv-cost,1,630,broad,10,6,93.538902,38.793594,4417,3846,10,10,True,True,6,4,0,0,0,1.0
+kv-cost,2,830,chain,6,1,203.870264,33.974941,4155,3327,,1128,False,False,0,5,0,0,0,0.0
+kv-cost,3,947,skewed,9,4,163.234962,38.375185,5554,2892,13,13,True,True,4,5,0,0,0,1.0
+kv-cost,4,1027,balanced,7,4,145.338441,55.270243,3623,4122,12,12,True,True,3,3,1,1,0,0.75
+kv-cost,5,1291,broad,10,6,121.236667,50.43938,3416,3648,27,27,True,True,2,4,0,0,0,0.3333333333333333
+kv-cost,6,1310,chain,6,1,207.268723,34.541521,4239,3715,64,64,True,True,1,5,0,0,0,1.0
+kv-cost,7,1318,skewed,9,4,178.588111,46.128951,4193,4400,14,14,True,True,4,5,0,0,0,1.0

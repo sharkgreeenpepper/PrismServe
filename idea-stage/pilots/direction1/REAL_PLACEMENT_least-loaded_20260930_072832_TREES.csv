@@ -1,0 +1,9 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,mean_request_latency_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+least-loaded,0,455,balanced,7,4,110.856724,46.263128,4625,4136,1920,1920,True,True,4,3,0,0,0,1.0
+least-loaded,1,630,broad,10,6,94.780594,41.610959,4397,3727,10,10,True,True,6,4,0,0,0,1.0
+least-loaded,2,830,chain,6,1,187.544761,31.254389,4155,3393,,1128,False,False,0,5,0,0,0,0.0
+least-loaded,3,947,skewed,9,4,155.241852,36.525386,5502,3132,13,13,True,True,4,5,0,0,0,1.0
+least-loaded,4,1027,balanced,7,4,140.209797,55.476305,3619,3601,12,12,True,True,4,3,0,0,0,1.0
+least-loaded,5,1291,broad,10,6,127.743044,52.68014,3416,3614,27,27,True,True,2,4,0,0,0,0.3333333333333333
+least-loaded,6,1310,chain,6,1,187.2705,31.208632,4324,3042,64,64,True,True,1,5,0,0,0,1.0
+least-loaded,7,1318,skewed,9,4,159.483649,40.436709,4499,2894,14,14,True,True,3,5,0,0,0,0.75

@@ -1,0 +1,9 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,mean_request_latency_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,leaf_exact_match_rate
+local-only,0,455,balanced,7,4,58.455004,23.915637,2895,2346,1920,1920,True,True,4,0,0,1.0
+local-only,1,630,broad,10,6,84.13229,34.661714,5354,2918,10,10,True,True,5,0,0,0.8333333333333334
+local-only,2,830,chain,6,1,117.685887,19.611289,5070,1618,1128,1128,True,True,1,0,0,1.0
+local-only,3,947,skewed,9,4,111.464315,28.862485,4087,2212,13,13,True,True,4,0,0,1.0
+local-only,4,1027,balanced,7,4,57.695812,23.305893,3021,2419,12,12,True,True,4,0,0,1.0
+local-only,5,1291,broad,10,6,81.378538,34.721373,3308,2817,,27,False,False,0,0,0,0.0
+local-only,6,1310,chain,6,1,119.894066,19.979421,4839,1643,64,64,True,True,1,0,0,1.0
+local-only,7,1318,skewed,9,4,117.836498,31.742276,5805,2577,14,14,True,True,4,0,0,1.0
