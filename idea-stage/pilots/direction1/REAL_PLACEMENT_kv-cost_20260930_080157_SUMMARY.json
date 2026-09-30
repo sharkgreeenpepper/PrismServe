@@ -1,0 +1,130 @@
+{
+  "strategy": "kv-cost",
+  "prompt_trace_mode": "frozen",
+  "model": "deepseek-r1-distill-llama-70b",
+  "workers": [
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8001"
+  ],
+  "question_count": 8,
+  "tree_count": 8,
+  "request_count": 64,
+  "node_count_per_tree": {
+    "0": 7,
+    "1": 10,
+    "2": 6,
+    "3": 9,
+    "4": 7,
+    "5": 10,
+    "6": 6,
+    "7": 9
+  },
+  "local_only_tree_homes": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1
+  },
+  "worker_request_counts": {
+    "0": 32,
+    "1": 32
+  },
+  "estimated_cached_prefix_tokens_total": 18160,
+  "requests_with_estimated_prefix_reuse": 56,
+  "max_tokens_inner": 1024,
+  "max_tokens_leaf": 1024,
+  "temperature": 0,
+  "max_concurrency_per_worker": 2,
+  "router_prefill_tps_assumption": 25000.0,
+  "router_decode_tps_assumption": 60.0,
+  "kv_block_size_assumption": 16,
+  "inference_wall_time_s": 207.290569,
+  "tree_completion_p50_s": 145.338441,
+  "tree_completion_p95_s": 207.268723,
+  "request_latency_p50_s": 49.280113,
+  "request_latency_p95_s": 76.545924,
+  "majority_exact_match_rate": 0.875,
+  "any_leaf_exact_match_rate": 0.875,
+  "leaf_answer_parse_rate": 0.8,
+  "unclosed_reasoning_leaf_count": 1,
+  "length_finished_leaf_count": 1,
+  "inner_node_count": 34,
+  "length_finished_inner_count": 0,
+  "length_finished_request_count": 1,
+  "prefix_cache_metrics_before": [
+    [
+      "vllm:kv_cache_usage_perc{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0"
+    ],
+    [
+      "vllm:kv_cache_usage_perc{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0"
+    ]
+  ],
+  "prefix_cache_metrics_after": [
+    [
+      "vllm:kv_cache_usage_perc{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 17391.0",
+      "vllm:prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 11056.0",
+      "vllm:external_prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0"
+    ],
+    [
+      "vllm:kv_cache_usage_perc{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 16773.0",
+      "vllm:prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 10224.0",
+      "vllm:external_prefix_cache_queries_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0",
+      "vllm:external_prefix_cache_hits_total{engine=\"0\",model_name=\"deepseek-r1-distill-llama-70b\"} 0.0"
+    ]
+  ],
+  "prefix_cache_metric_deltas": [
+    {
+      "endpoint": "http://127.0.0.1:8000",
+      "query_delta": 17391.0,
+      "hit_delta": 11056.0,
+      "token_hit_rate": 0.6357311252946927
+    },
+    {
+      "endpoint": "http://127.0.0.1:8001",
+      "query_delta": 16773.0,
+      "hit_delta": 10224.0,
+      "token_hit_rate": 0.609551064210338
+    }
+  ],
+  "dataset_path": "/home/bumi/infra/assets/gsm8k/test.jsonl",
+  "dataset_source": "https://github.com/openai/grade-school-math",
+  "dataset_seed": 20260930,
+  "prompt_trace_path": "idea-stage/pilots/direction1/REAL_PLACEMENT_TRACE_20260930_074612.json",
+  "prompt_trace_sha256": "3fb5cdb0d15cfb734daa4d39eeb2c2a6f602fbb16e7bde5c053e26c66b4eb797",
+  "selected_dataset_indices": [
+    455,
+    630,
+    830,
+    947,
+    1027,
+    1291,
+    1310,
+    1318
+  ],
+  "tree_shapes": {
+    "0": "balanced",
+    "1": "broad",
+    "2": "chain",
+    "3": "skewed",
+    "4": "balanced",
+    "5": "broad",
+    "6": "chain",
+    "7": "skewed"
+  },
+  "note": "Real vLLM inference on a synthetic chat-history branching workload over GSM8K questions. DeepSeek chat templating can remove or reformat think-marked assistant history, so this does not claim parent-output reasoning KV reuse. There is no cross-replica KV transfer; remote prefixes are recomputed. Prefix estimates use completed prompts only and do not model active sibling sharing, cache eviction, or exact generated token IDs. Reported vLLM prefix-cache metric deltas are token-level counters. Sibling-lookahead is a topology-aware heuristic, not an oracle. Descendant workloads can differ across placements; inspect recorded outputs and token counts. Scheduler service estimates use the explicit assumptions recorded above. With eight trees, p95 is the maximum observed tree latency and is exploratory."
+}
