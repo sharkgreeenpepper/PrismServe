@@ -69,3 +69,5 @@
 | 2026-09-30 16:18 | /render-html | .aris/traces/render-html/2026-09-30_run02/review.txt | idea-discovery | Final render audit prompt and raw reviewer response |
 | 2026-09-30 16:18 | /render-html | idea-stage/IDEA_REPORT.html.review.json | idea-discovery | Provisional PASS render-audit sidecar for latest HTML |
 | 2026-09-30 16:18 | /render-html | idea-stage/IDEA_REPORT_20260930_161807.html.review.json | idea-discovery | Provisional PASS render-audit sidecar for timestamped HTML |
+| 2026-09-30 17:36 | /result-to-claim | CLAIMS_FROM_RESULTS.md | result-to-claim | REVIEW_UNAVAILABLE; secondary reviewer hit account usage limit, so no claim verdict was issued |
+| 2026-09-30 17:36 | /result-to-claim | findings.md | result-to-claim | Records REVIEW_UNAVAILABLE; semantic assessment remains blocked |
