@@ -30,3 +30,10 @@ The result is evidence against continuing the **current heuristic unchanged** on
 ## Audit status
 
 The deterministic precheck verifies the cited metric values exist. No experiment integrity audit artifact was found; integrity status is unavailable. The semantic reviewer was same-family and provisional, with external review pending. See `RESULTS_ANALYSIS.md` and `.aris/traces/result-to-claim/2026-10-01_run02/`.
+
+## Fixed-output diagnostic (2026-10-01)
+
+- Four main runs and the one-tree sanity run returned exactly 256 completion tokens per request; both paired blocks passed the server-queue pressure gate. Flat/tree median tree completion was 59.086/59.516 s in B1 and 59.250/59.292 s in B2, so the aggregate difference was within 1%, not the prior natural-generation gap of about 10.3%.
+- Tree-level effects were mixed but repeated: tree 3 was about 11% slower under tree-aware placement, while tree 5 was 9.8–10.9% faster. Tree routing changed 9/38 and 11/38 node placements, and its estimated cached-prefix tokens fell from 9,712 to 8,672/7,968 while aggregate queue mean rose 0.32–0.41 s. The queue and cache measurements are run-level; they do not identify per-tree causes.
+- **Interpretation:** equalizing generated work removes the aggregate latency gap in this four-tree diagnostic, consistent with output-work differences contributing to the earlier result. This does not establish causality because the router's output-length profile also changed. The result is inconclusive under the frozen ±5% screen and does not support a general benefit or ineffectiveness claim. Do not spend more compute repeating the same four trees; any follow-up should use an independent tree cohort, natural generation as the primary endpoint, and fixed-output runs only as a diagnostic.
+- Detailed results: `FIXED_OUTPUT_DIAGNOSTIC_RESULTS.md`; raw summaries and logs: `results/20261001_113516_fixed_output_256/`.
