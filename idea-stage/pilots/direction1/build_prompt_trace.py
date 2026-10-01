@@ -30,6 +30,8 @@ def build_trace(
     seed: int,
     max_tokens_inner: int,
     max_tokens_leaf: int,
+    strict_prompt_token_counts: bool = False,
+    expected_dataset_indices: list[int] | None = None,
 ) -> None:
     with requests_csv.open(newline="", encoding="utf-8") as stream:
         rows = list(csv.DictReader(stream))
@@ -38,6 +40,12 @@ def build_trace(
         for row in rows
     }
     trees = load_trees(dataset, question_count, seed)
+    selected_indices = [tree.dataset_index for tree in trees]
+    if expected_dataset_indices is not None and selected_indices != expected_dataset_indices:
+        raise ValueError(
+            "Sample selection differs from the frozen cohort: "
+            f"expected={expected_dataset_indices}, actual={selected_indices}"
+        )
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir, local_files_only=True)
     trace_nodes: list[dict[str, Any]] = []
     token_count_mismatches: list[dict[str, int]] = []
@@ -89,6 +97,11 @@ def build_trace(
     expected_count = sum(len(tree.nodes) for tree in trees)
     if len(trace_nodes) != expected_count:
         raise ValueError(f"Trace has {len(trace_nodes)} nodes; expected {expected_count}")
+    if strict_prompt_token_counts and token_count_mismatches:
+        raise ValueError(
+            "Frozen prompt token counts differ from the source run: "
+            f"{token_count_mismatches[:5]}"
+        )
     payload = {
         "format": "prismserve-placement-prompt-trace-v1",
         "source_requests_csv": str(requests_csv),
@@ -130,6 +143,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260930)
     parser.add_argument("--max-tokens-inner", type=int, default=1024)
     parser.add_argument("--max-tokens-leaf", type=int, default=1024)
+    parser.add_argument("--strict-prompt-token-counts", action="store_true")
+    parser.add_argument("--expected-dataset-indices", nargs="+", type=int)
     args = parser.parse_args()
     build_trace(
         args.requests_csv,
@@ -140,6 +155,8 @@ def main() -> None:
         args.seed,
         args.max_tokens_inner,
         args.max_tokens_leaf,
+        args.strict_prompt_token_counts,
+        args.expected_dataset_indices,
     )
 
 
