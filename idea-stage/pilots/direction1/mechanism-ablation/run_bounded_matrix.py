@@ -404,6 +404,8 @@ class BudgetController:
             "--reset-prefix-cache",
             "--omit-output-text",
         ]
+        if self.args.fixed_output_tokens is not None:
+            common.extend(["--fixed-output-tokens", str(self.args.fixed_output_tokens)])
         calibrator = script_dir / "calibrate_vllm_service_rates.py"
         runner = project_dir / "idea-stage/pilots/direction1/run_vllm_placement_pilot.py"
         self.run_stage(
@@ -446,7 +448,11 @@ class BudgetController:
                 "--max-tokens-leaf",
                 "64",
                 "--run-label",
-                "sanity-tree1-64tok",
+                (
+                    f"sanity-tree1-fixed{self.args.fixed_output_tokens}"
+                    if self.args.fixed_output_tokens is not None
+                    else "sanity-tree1-64tok"
+                ),
             ]
         )
         if not self.run_stage(
@@ -476,7 +482,11 @@ class BudgetController:
                     "--max-tokens-leaf",
                     "1024",
                     "--run-label",
-                    label,
+                    (
+                        f"{label}-fixed{self.args.fixed_output_tokens}"
+                        if self.args.fixed_output_tokens is not None
+                        else label
+                    ),
                 ),
             )
             if not completed:
@@ -512,7 +522,11 @@ class BudgetController:
                         "--max-tokens-leaf",
                         "1024",
                         "--run-label",
-                        label,
+                        (
+                            f"{label}-fixed{self.args.fixed_output_tokens}"
+                            if self.args.fixed_output_tokens is not None
+                            else label
+                        ),
                     ),
                 )
                 if not reference_completed:
@@ -580,6 +594,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prior-gpu-min", type=float, default=0.0)
     parser.add_argument("--cleanup-reserve-gpu-min", type=float, default=5.0)
     parser.add_argument("--optional-run-reserve-s", type=float, default=360.0)
+    parser.add_argument("--fixed-output-tokens", type=int)
     args = parser.parse_args()
     if len(set(args.gpu_ids)) != 4 or any(gpu < 0 for gpu in args.gpu_ids):
         parser.error("--gpu-ids must contain four distinct non-negative indices")
@@ -589,6 +604,8 @@ def parse_args() -> argparse.Namespace:
         args.prior_gpu_min + args.cleanup_reserve_gpu_min >= args.max_gpu_min
     ):
         parser.error("prior usage and cleanup reserve must leave positive work budget")
+    if args.fixed_output_tokens is not None and args.fixed_output_tokens < 1:
+        parser.error("--fixed-output-tokens must be positive")
     for path_arg in (
         "vllm_bin",
         "python_bin",

@@ -71,3 +71,6 @@
 | 2026-09-30 16:18 | /render-html | idea-stage/IDEA_REPORT_20260930_161807.html.review.json | idea-discovery | Provisional PASS render-audit sidecar for timestamped HTML |
 | 2026-09-30 17:36 | /result-to-claim | CLAIMS_FROM_RESULTS.md | result-to-claim | REVIEW_UNAVAILABLE; secondary reviewer hit account usage limit, so no claim verdict was issued |
 | 2026-09-30 17:36 | /result-to-claim | findings.md | result-to-claim | Records REVIEW_UNAVAILABLE; semantic assessment remains blocked |
+| 2026-10-01 11:35 | /experiment-plan | idea-stage/pilots/direction1/mechanism-ablation/FIXED_OUTPUT_DIAGNOSTIC_PLAN_20261001_113516.md | implementation | Frozen plan for equal-generation-work placement diagnosis; 35 GPU-min cap |
+| 2026-10-01 11:35 | /experiment-plan | idea-stage/pilots/direction1/mechanism-ablation/FIXED_OUTPUT_DIAGNOSTIC_PLAN.md | implementation | Latest fixed-output diagnostic plan |
+| 2026-10-01 11:35 | /experiment-plan | idea-stage/pilots/direction1/mechanism-ablation/results/20261001_113516_fixed_output_256/output_length_profile.json | implementation | Fixed 256-token output workload profile for both node roles |
