@@ -1,0 +1,5 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,critical_path_latency_s,critical_path_node_ids,mean_request_latency_s,mean_client_semaphore_wait_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+local-only,0,289,balanced,7,4,108.104852,108.123636,"[0, 4, 6]",42.235937,20.380931,3110,3427,16,16,True,True,4,3,0,0,0,1.0
+local-only,1,329,broad,10,6,82.686357,82.705927,"[0, 7, 9]",33.956267,19.248737,3772,3396,14,14,True,True,6,4,0,0,0,1.0
+local-only,2,758,chain,6,1,167.592906,167.613013,"[0, 1, 2, 3, 4, 5]",27.929632,8.558181,1965,2530,133,133,True,True,1,5,0,0,0,1.0
+local-only,3,1108,skewed,9,4,147.515328,147.535616,"[0, 1, 3, 5, 7]",40.985056,21.821728,3258,3116,38,38,True,True,4,5,0,0,0,1.0

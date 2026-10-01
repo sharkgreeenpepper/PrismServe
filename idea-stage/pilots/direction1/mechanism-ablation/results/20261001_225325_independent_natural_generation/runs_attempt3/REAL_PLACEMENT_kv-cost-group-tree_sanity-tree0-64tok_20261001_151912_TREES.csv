@@ -1,0 +1,2 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,critical_path_latency_s,critical_path_node_ids,mean_request_latency_s,mean_client_semaphore_wait_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+kv-cost-group-tree,0,289,balanced,7,4,5.181523,5.181451,"[0, 4, 6]",1.735405,6e-06,3110,448,,16,False,False,0,3,4,4,3,0.0
