@@ -367,9 +367,15 @@ class BudgetController:
     def run_experiments(self) -> None:
         script_dir = Path(__file__).resolve().parent
         project_dir = Path(__file__).resolve().parents[4]
-        profile_path = Path(self.args.output_dir) / "service_rate_profile.json"
+        profile_path = (
+            Path(self.args.reuse_service_profile)
+            if self.args.reuse_service_profile
+            else Path(self.args.output_dir) / "service_rate_profile.json"
+        )
         output_profile = Path(self.args.output_profile)
-        common = [
+        tree_ids = [int(tree_id) for tree_id in self.args.tree_ids]
+        tree_id_args = [str(tree_id) for tree_id in tree_ids]
+        base_common = [
             "--workers",
             *WORKERS,
             "--model-name",
@@ -383,14 +389,9 @@ class BudgetController:
             "--output-dir",
             self.args.output_dir,
             "--questions",
-            "8",
+            str(self.args.questions),
             "--seed",
-            "20260930",
-            "--tree-ids",
-            "1",
-            "3",
-            "5",
-            "7",
+            str(self.args.seed),
             "--max-concurrency",
             "4",
             "--router-capacity",
@@ -405,71 +406,155 @@ class BudgetController:
             "--omit-output-text",
         ]
         if self.args.fixed_output_tokens is not None:
-            common.extend(["--fixed-output-tokens", str(self.args.fixed_output_tokens)])
+            base_common.extend(["--fixed-output-tokens", str(self.args.fixed_output_tokens)])
         calibrator = script_dir / "calibrate_vllm_service_rates.py"
         runner = project_dir / "idea-stage/pilots/direction1/run_vllm_placement_pilot.py"
-        self.run_stage(
-            # Both replicas run the identical calibration set concurrently.
-            "service-calibration",
-            self.python_command(
-                calibrator,
-                "--workers",
-                *WORKERS,
-                "--trace-json",
-                self.args.trace_json,
+        if self.args.prepare_independent_trace:
+            source_common = [
+                *base_common[: base_common.index("--trace-json")],
+                *base_common[base_common.index("--trace-json") + 2 :],
+            ]
+            source_common = [
+                argument for argument in source_common if argument != "--omit-output-text"
+            ]
+            source_command = [
+                "--strategy",
+                # Placement strategies need the frozen trace they are meant
+                # to help construct. Generate the natural source history
+                # with local-only, which accepts live parent outputs.
+                "local-only",
+                *source_common,
                 "--tree-ids",
-                "0",
-                "2",
-                "4",
-                "6",
-                "--model-name",
-                MODEL_NAME,
-                "--max-tokens",
-                "128",
-                "--output-json",
-                str(profile_path),
-            ),
-        )
+                *tree_id_args,
+                "--max-tokens-inner",
+                "1024",
+                "--max-tokens-leaf",
+                "1024",
+                "--run-label",
+                "cohort-source-local",
+            ]
+            service_profile_index = source_command.index("--service-profile-json")
+            source_command[service_profile_index + 1] = self.args.bootstrap_service_profile
+            if not self.run_stage(
+                "cohort-source-local", self.python_command(runner, *source_command)
+            ):
+                self.state = "INCOMPLETE_COHORT_SOURCE_BUDGET"
+                self.save_state()
+                return
+            source_candidates = sorted(
+                Path(self.args.output_dir).glob(
+                    "REAL_PLACEMENT_local-only_cohort-source-local_*_REQUESTS.csv"
+                )
+            )
+            if len(source_candidates) != 1:
+                raise RuntimeError(
+                    "Expected one source-pass request CSV, found "
+                    f"{[str(path) for path in source_candidates]}"
+                )
+            trace_builder = project_dir / "idea-stage/pilots/direction1/build_prompt_trace.py"
+            build_trace_command = self.python_command(
+                trace_builder,
+                "--requests-csv",
+                str(source_candidates[0]),
+                "--dataset",
+                self.args.dataset,
+                "--tokenizer-dir",
+                self.args.tokenizer_dir,
+                "--output",
+                self.args.trace_json,
+                "--questions",
+                str(self.args.questions),
+                "--seed",
+                str(self.args.seed),
+                "--max-tokens-inner",
+                "1024",
+                "--max-tokens-leaf",
+                "1024",
+                "--strict-prompt-token-counts",
+                "--expected-dataset-indices",
+                *[str(index) for index in self.args.expected_dataset_indices],
+            )
+            if not self.run_stage("build-frozen-trace", build_trace_command, max_stage_s=120.0):
+                self.state = "INCOMPLETE_TRACE_BUILD_BUDGET"
+                self.save_state()
+                return
+            if not Path(self.args.trace_json).is_file():
+                raise RuntimeError(f"Trace builder did not create {self.args.trace_json}")
+
+        common = [*base_common, "--tree-ids", *tree_id_args]
+        calibration_tree_ids = self.args.calibration_tree_ids
+        if calibration_tree_ids is None:
+            calibration_tree_ids = (
+                tree_ids
+                if self.args.prepare_independent_trace
+                else [tree_id for tree_id in (0, 2, 4, 6) if tree_id < self.args.questions]
+            )
+        if self.args.reuse_service_profile:
+            self.stage_records.append(
+                {
+                    "label": "service-calibration-reused",
+                    "status": "REUSED",
+                    "profile": str(profile_path),
+                    "time_utc": utc_now(),
+                }
+            )
+            self.save_state()
+        else:
+            self.run_stage(
+                # Both replicas run the identical calibration set concurrently.
+                "service-calibration",
+                self.python_command(
+                    calibrator,
+                    "--workers",
+                    *WORKERS,
+                    "--trace-json",
+                    self.args.trace_json,
+                    "--tree-ids",
+                    *[str(tree_id) for tree_id in calibration_tree_ids],
+                    "--model-name",
+                    MODEL_NAME,
+                    "--max-tokens",
+                    "128",
+                    "--output-json",
+                    str(profile_path),
+                ),
+            )
         if not profile_path.is_file():
             self.state = "INCOMPLETE_SERVICE_CALIBRATION"
             self.save_state()
             return
-        sanity = [
-            argument
-            for argument in common
-            if argument not in ("--tree-ids", "1", "3", "5", "7")
-        ]
-        sanity.extend(
-            [
+        if not self.args.prepare_independent_trace and not self.args.skip_sanity:
+            sanity_label = (
+                f"sanity-tree{tree_ids[0]}-fixed{self.args.fixed_output_tokens}"
+                if self.args.fixed_output_tokens is not None
+                else f"sanity-tree{tree_ids[0]}-64tok"
+            )
+            sanity = [
+                *base_common,
                 "--tree-ids",
-                "1",
+                str(tree_ids[0]),
                 "--max-tokens-inner",
                 "64",
                 "--max-tokens-leaf",
                 "64",
                 "--run-label",
-                (
-                    f"sanity-tree1-fixed{self.args.fixed_output_tokens}"
-                    if self.args.fixed_output_tokens is not None
-                    else "sanity-tree1-64tok"
-                ),
+                sanity_label,
             ]
-        )
-        if not self.run_stage(
-            "sanity-tree1",
-            self.python_command(runner, "--strategy", "kv-cost-group-tree", *sanity),
-        ):
-            self.state = "INCOMPLETE_SANITY_BUDGET"
-            self.save_state()
-            return
+            if not self.run_stage(
+                "sanity-tree1",
+                self.python_command(runner, "--strategy", "kv-cost-group-tree", *sanity),
+            ):
+                self.state = "INCOMPLETE_SANITY_BUDGET"
+                self.save_state()
+                return
 
-        primary_common = [
-            argument
-            for argument in common
-            if argument not in ("--tree-ids", "1", "3", "5", "7")
-        ]
-        primary_common.extend(["--tree-ids", "1", "3", "5", "7"])
-        for label, strategy in PRIMARY_RUNS:
+        primary_common = [*base_common, "--tree-ids", *tree_id_args]
+        primary_runs = (
+            [run for run in PRIMARY_RUNS if run[0] == self.args.only_primary_run]
+            if self.args.only_primary_run
+            else PRIMARY_RUNS
+        )
+        for label, strategy in primary_runs:
             completed = self.run_stage(
                 label,
                 self.python_command(
@@ -585,6 +670,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tokenizer-dir", required=True)
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--trace-json", required=True)
+    parser.add_argument("--questions", type=int, default=8)
+    parser.add_argument("--seed", type=int, default=20260930)
+    parser.add_argument("--tree-ids", nargs="+", type=int, default=[1, 3, 5, 7])
+    parser.add_argument("--calibration-tree-ids", nargs="+", type=int)
+    parser.add_argument(
+        "--reuse-service-profile",
+        help="Reuse a calibrated service profile when continuing the same cohort",
+    )
+    parser.add_argument(
+        "--only-primary-run",
+        choices=[label for label, _ in PRIMARY_RUNS],
+        help="Run only one frozen primary condition during a bounded continuation",
+    )
+    parser.add_argument(
+        "--skip-sanity",
+        action="store_true",
+        help="Skip the short sanity replay when continuing a previously verified cohort",
+    )
+    parser.add_argument("--prepare-independent-trace", action="store_true")
+    parser.add_argument("--bootstrap-service-profile")
+    parser.add_argument("--expected-dataset-indices", nargs="+", type=int)
     parser.add_argument("--output-profile", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--budget-log", required=True)
@@ -606,6 +712,39 @@ def parse_args() -> argparse.Namespace:
         parser.error("prior usage and cleanup reserve must leave positive work budget")
     if args.fixed_output_tokens is not None and args.fixed_output_tokens < 1:
         parser.error("--fixed-output-tokens must be positive")
+    if args.questions < 1:
+        parser.error("--questions must be positive")
+    if not args.tree_ids or len(set(args.tree_ids)) != len(args.tree_ids):
+        parser.error("--tree-ids must contain one or more unique ids")
+    if any(tree_id < 0 or tree_id >= args.questions for tree_id in args.tree_ids):
+        parser.error("every --tree-ids value must be between 0 and questions-1")
+    if args.prepare_independent_trace:
+        if args.fixed_output_tokens is not None:
+            parser.error("independent cohort preparation requires natural generation")
+        if set(args.tree_ids) != set(range(args.questions)):
+            parser.error(
+                "independent trace preparation requires every tree id from 0 to questions-1"
+            )
+        if not args.bootstrap_service_profile:
+            parser.error("--bootstrap-service-profile is required with --prepare-independent-trace")
+        if not args.expected_dataset_indices or len(args.expected_dataset_indices) != args.questions:
+            parser.error(
+                "--expected-dataset-indices must provide one frozen index per question"
+            )
+        if len(set(args.expected_dataset_indices)) != len(args.expected_dataset_indices):
+            parser.error("--expected-dataset-indices must be unique")
+        if args.reuse_service_profile:
+            parser.error("--reuse-service-profile cannot be used while preparing a new trace")
+        if args.only_primary_run:
+            parser.error("--only-primary-run cannot be used while preparing a new trace")
+        if args.skip_sanity:
+            parser.error("--skip-sanity cannot be used while preparing a new trace")
+    elif args.calibration_tree_ids is not None and not args.calibration_tree_ids:
+        parser.error("--calibration-tree-ids must contain one or more ids")
+    if args.calibration_tree_ids is not None and any(
+        tree_id < 0 or tree_id >= args.questions for tree_id in args.calibration_tree_ids
+    ):
+        parser.error("every --calibration-tree-ids value must be between 0 and questions-1")
     for path_arg in (
         "vllm_bin",
         "python_bin",
@@ -613,7 +752,6 @@ def parse_args() -> argparse.Namespace:
         "model_dir",
         "tokenizer_dir",
         "dataset",
-        "trace_json",
         "output_profile",
     ):
         path = Path(getattr(args, path_arg))
@@ -621,6 +759,19 @@ def parse_args() -> argparse.Namespace:
             parser.error(f"{path_arg.replace('_', '-')} does not exist: {path}")
         if path_arg == "cuda_home" and not (path / "bin/nvcc").is_file():
             parser.error(f"CUDA toolkit has no bin/nvcc: {path}")
+    if not args.prepare_independent_trace and not Path(args.trace_json).exists():
+        parser.error(f"trace-json does not exist: {args.trace_json}")
+    if args.prepare_independent_trace:
+        bootstrap = Path(args.bootstrap_service_profile)
+        if not bootstrap.is_file():
+            parser.error(f"bootstrap-service-profile does not exist: {bootstrap}")
+    if args.reuse_service_profile:
+        profile = Path(args.reuse_service_profile)
+        if not profile.is_file():
+            parser.error(f"reuse-service-profile does not exist: {profile}")
+        args.reuse_service_profile = str(profile.resolve())
+    if args.skip_sanity and not args.reuse_service_profile:
+        parser.error("--skip-sanity requires --reuse-service-profile")
     return args
 
 
@@ -649,6 +800,8 @@ def main() -> int:
         # pyvenv.cfg, so child stages lose the runtime's site-packages.
         normalized = Path(os.path.abspath(path)) if path_arg == "python_bin" else path.resolve()
         setattr(args, path_arg, str(normalized))
+    if args.bootstrap_service_profile:
+        args.bootstrap_service_profile = str(Path(args.bootstrap_service_profile).resolve())
     output_dir = Path(args.output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
         raise SystemExit(f"Refusing to reuse a non-empty output directory: {output_dir}")

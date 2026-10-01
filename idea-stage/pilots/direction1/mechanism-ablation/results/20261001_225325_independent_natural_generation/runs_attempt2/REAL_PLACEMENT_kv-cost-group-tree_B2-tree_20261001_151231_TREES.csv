@@ -1,0 +1,5 @@
+strategy,tree_id,dataset_index,shape,node_count,leaf_count,completion_latency_s,critical_path_latency_s,critical_path_node_ids,mean_request_latency_s,mean_client_semaphore_wait_s,prompt_tokens,completion_tokens,majority_prediction,expected_answer,majority_correct,any_leaf_correct,parsed_leaf_count,inner_node_count,unclosed_reasoning_leaf_count,length_finished_leaf_count,length_finished_inner_count,leaf_exact_match_rate
+kv-cost-group-tree,0,289,balanced,7,4,74.653391,74.652584,"[0, 1, 3]",27.160248,7.235343,3110,3415,16,16,True,True,4,3,0,0,0,1.0
+kv-cost-group-tree,1,329,broad,10,6,59.547718,59.547237,"[0, 7, 9]",20.502441,4.257221,3772,3415,14,14,True,True,6,4,0,0,0,1.0
+kv-cost-group-tree,2,758,chain,6,1,94.83439,94.834119,"[0, 1, 2, 3, 4, 5]",15.803232,1.517904,1965,2642,133,133,True,True,1,5,0,0,0,1.0
+kv-cost-group-tree,3,1108,skewed,9,4,73.512482,73.512659,"[0, 1, 3, 5, 7]",19.130347,3.309237,3258,2647,38,38,True,True,4,5,0,0,0,1.0

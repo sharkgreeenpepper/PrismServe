@@ -59,3 +59,13 @@ All four policies recorded 7/8 majority exact-match accuracy. Least-loaded reduc
 - Structural simulation evidence: `idea-stage/pilots/direction1/STRUCTURAL_PILOT_REPORT.md`.
 - Deterministic evidence-existence results: `.aris/evidence_precheck.json` (local trace data; not committed).
 - The first semantic review attempt on 2026-09-30 was unavailable due to an account usage limit. The successful same-family retry on 2026-10-01 supersedes that unavailable status; full review trace remains in local `.aris/traces/` and is not committed.
+
+## Independent natural-generation cohort (2026-10-01)
+
+**Claim judgment:** `claim_supported: no`; frozen cohort screen: **inconclusive**. The same-family semantic review is provisional, and no experiment-integrity audit was available.
+
+The new four-question GSM8K cohort replayed 32 matched natural-history nodes per arm under the frozen queue-pressure gate. Tree-aware placement changed the median of four tree-completion latencies by +1.25% in B1 and −6.81% in B2 (positive values favor tree-aware placement). Thus neither the prespecified ≥5% speedup in both blocks nor consistent ≥5% slowdown in both blocks passed. The correct interpretation is an inconclusive pilot and an unsupported targeted improvement claim, not evidence of equivalence or a general scheduling effect.
+
+All arms recorded 4/4 majority-exact trees and 15/15 parsed exact-match leaves; these four questions do not establish correctness non-inferiority. Completion-token totals differed across arms, and full generated outputs were not saved. The completed B2-flat run followed two excluded timeouts and ran in a separate server session; its tree→flat order does not make it an uninterrupted crossover. The deterministic evidence precheck found 14/14 cited values, which establishes evidence presence only.
+
+See `idea-stage/pilots/direction1/mechanism-ablation/results/20261001_225325_independent_natural_generation/INDEPENDENT_COHORT_RESULTS.md` and the local provisional review trace under `.aris/traces/result-to-claim/2026-10-01_run03/`.

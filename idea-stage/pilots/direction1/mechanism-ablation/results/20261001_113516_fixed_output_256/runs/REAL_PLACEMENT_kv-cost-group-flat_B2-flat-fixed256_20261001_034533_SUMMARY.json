@@ -51,8 +51,8 @@
     40.65656508649843,
     40.79083840908648
   ],
-  "service_profile_json": "/home/bumi/git/PrismServe-fixed-output/idea-stage/pilots/direction1/mechanism-ablation/results/20261001_113516_fixed_output_256/runs/service_rate_profile.json",
-  "output_length_profile_json": "/home/bumi/git/PrismServe-fixed-output/idea-stage/pilots/direction1/mechanism-ablation/results/20261001_113516_fixed_output_256/output_length_profile.json",
+  "service_profile_json": "$REPO_ROOT/idea-stage/pilots/direction1/mechanism-ablation/results/20261001_113516_fixed_output_256/runs/service_rate_profile.json",
+  "output_length_profile_json": "$REPO_ROOT/idea-stage/pilots/direction1/mechanism-ablation/results/20261001_113516_fixed_output_256/output_length_profile.json",
   "output_text_recorded": false,
   "kv_block_size_assumption": 16,
   "inference_wall_time_s": 65.467552,
@@ -958,10 +958,10 @@
   ],
   "vllm_mean_request_queue_time_s": 4.610349660546298,
   "vllm_request_queue_observation_count": 38.0,
-  "dataset_path": "/home/bumi/infra/assets/gsm8k/test.jsonl",
+  "dataset_path": "$DATA_ROOT/gsm8k/test.jsonl",
   "dataset_source": "https://github.com/openai/grade-school-math",
   "dataset_seed": 20260930,
-  "prompt_trace_path": "/home/bumi/git/PrismServe-fixed-output/idea-stage/pilots/direction1/REAL_PLACEMENT_TRACE_20260930_074612.json",
+  "prompt_trace_path": "$REPO_ROOT/idea-stage/pilots/direction1/REAL_PLACEMENT_TRACE_20260930_074612.json",
   "prompt_trace_sha256": "3fb5cdb0d15cfb734daa4d39eeb2c2a6f602fbb16e7bde5c053e26c66b4eb797",
   "selected_dataset_indices": [
     630,
