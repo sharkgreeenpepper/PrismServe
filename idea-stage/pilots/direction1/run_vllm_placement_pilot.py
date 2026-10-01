@@ -757,6 +757,9 @@ async def run_policy(
             "max_tokens": node.max_tokens,
             "temperature": 0,
         }
+        if args.fixed_output_tokens is not None:
+            payload["ignore_eos"] = True
+            payload["min_tokens"] = args.fixed_output_tokens
         async with semaphores[worker]:
             http_start = time.perf_counter()
             response = await clients[worker].post(
@@ -771,6 +774,16 @@ async def run_policy(
         choice = result["choices"][0]
         content = choice.get("message", {}).get("content") or ""
         usage = result.get("usage") or {}
+        completion_tokens = int(usage.get("completion_tokens", 0))
+        finish_reason = choice.get("finish_reason", "unknown")
+        if args.fixed_output_tokens is not None and (
+            completion_tokens != args.fixed_output_tokens or finish_reason != "length"
+        ):
+            raise RuntimeError(
+                "Fixed-output request did not reach its exact token budget: "
+                f"expected={args.fixed_output_tokens}, actual={completion_tokens}, "
+                f"finish_reason={finish_reason!r}"
+            )
         return {
             "worker": worker,
             "node": node,
@@ -789,8 +802,8 @@ async def run_policy(
             "ready_to_http_start_s": http_start - policy_start - ready_offset_s,
             "content": content,
             "prompt_tokens": int(usage.get("prompt_tokens", len(prompt_ids))),
-            "completion_tokens": int(usage.get("completion_tokens", 0)),
-            "finish_reason": choice.get("finish_reason", "unknown"),
+            "completion_tokens": completion_tokens,
+            "finish_reason": finish_reason,
         }
 
     try:
@@ -1088,6 +1101,8 @@ async def run_policy(
         ),
         "max_tokens_inner": args.max_tokens_inner,
         "max_tokens_leaf": args.max_tokens_leaf,
+        "fixed_output_tokens": args.fixed_output_tokens,
+        "ignore_eos": args.fixed_output_tokens is not None,
         "temperature": 0,
         "max_concurrency_per_worker": args.max_concurrency,
         "router_capacity_per_worker": router.capacity,
@@ -1167,6 +1182,11 @@ def append_checkpoint_row(path: Path, row: dict[str, Any]) -> None:
 
 
 async def async_main(args: argparse.Namespace) -> None:
+    if args.fixed_output_tokens is not None:
+        if args.fixed_output_tokens < 1:
+            raise ValueError("--fixed-output-tokens must be positive")
+        args.max_tokens_inner = args.fixed_output_tokens
+        args.max_tokens_leaf = args.fixed_output_tokens
     if args.strategy not in POLICIES:
         raise ValueError(f"Unknown strategy {args.strategy!r}; choose from {', '.join(POLICIES)}")
     if len(args.workers) < 2:
@@ -1270,6 +1290,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-concurrency", type=int, default=2)
     parser.add_argument("--max-tokens-inner", type=int, default=1024)
     parser.add_argument("--max-tokens-leaf", type=int, default=1024)
+    parser.add_argument(
+        "--fixed-output-tokens",
+        type=int,
+        help="Force exactly this many generated tokens per request; disables EOS stopping",
+    )
     parser.add_argument("--request-timeout-s", type=float, default=300.0)
     parser.add_argument("--prefill-tps", type=float, default=25000.0)
     parser.add_argument("--decode-tps", type=float, default=60.0)

@@ -1,0 +1,8 @@
+{
+  "source": "controlled fixed-output diagnostic; not a natural output-length estimate",
+  "expected_output_tokens": {
+    "inner": 256,
+    "leaf": 256
+  },
+  "note": "Every request is configured with min_tokens=max_tokens=256 and ignore_eos=true. The runner validates exactly 256 returned completion tokens."
+}
