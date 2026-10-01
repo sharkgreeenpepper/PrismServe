@@ -1,0 +1,31 @@
+{
+  "source_requests_csv": "idea-stage/pilots/direction1/REAL_PLACEMENT_local-only_20260930_075200_REQUESTS.csv",
+  "calibration_tree_ids": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "excluded_finish_reason": "length",
+  "expected_output_tokens": {
+    "inner": 529.0,
+    "leaf": 532.5
+  },
+  "observations": {
+    "inner": {
+      "count": 16,
+      "median_tokens": 529.0,
+      "mean_tokens": 570.562,
+      "min_tokens": 430,
+      "max_tokens": 881
+    },
+    "leaf": {
+      "count": 10,
+      "median_tokens": 532.5,
+      "mean_tokens": 554.5,
+      "min_tokens": 416,
+      "max_tokens": 763
+    }
+  },
+  "note": "Role medians from held-out tree IDs in the earlier local-only frozen replay. This is an exploratory workload prior, not an independently validated predictor."
+}
