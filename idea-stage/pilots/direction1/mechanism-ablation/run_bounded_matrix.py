@@ -1,0 +1,684 @@
+#!/usr/bin/env python3
+"""Run the direction-1 mechanism screen under a wall-clock GPU budget."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import signal
+import socket
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+from urllib.error import URLError
+from urllib.request import Request, urlopen
+
+
+MODEL_NAME = "deepseek-r1-distill-llama-70b"
+WORKERS = ("http://127.0.0.1:8004", "http://127.0.0.1:8005")
+PRIMARY_RUNS = (
+    ("B1-flat", "kv-cost-group-flat"),
+    ("B1-tree", "kv-cost-group-tree"),
+    ("B2-tree", "kv-cost-group-tree"),
+    ("B2-flat", "kv-cost-group-flat"),
+)
+OPTIONAL_RUNS = (
+    ("reference-local", "local-only"),
+    ("reference-least-loaded", "least-loaded"),
+)
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    temp = path.with_suffix(path.suffix + ".tmp")
+    temp.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    temp.replace(path)
+
+
+def http_text(url: str, method: str = "GET", timeout_s: float = 2.0) -> str:
+    request = Request(url, data=None, method=method)
+    with urlopen(request, timeout=timeout_s) as response:
+        return response.read().decode("utf-8", errors="replace")
+
+
+def check_ports_free(ports: tuple[int, ...]) -> None:
+    for port in ports:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.5):
+                raise RuntimeError(f"Port {port} is already serving; refusing to reuse it")
+        except OSError:
+            pass
+
+
+def check_gpus_free(gpu_ids: tuple[int, ...]) -> None:
+    result = subprocess.run(
+        [
+            "nvidia-smi",
+            "--query-gpu=index,memory.used,utilization.gpu",
+            "--format=csv,noheader,nounits",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    observed: dict[int, tuple[int, int]] = {}
+    for line in result.stdout.splitlines():
+        index, memory, utilization = (part.strip() for part in line.split(","))
+        observed[int(index)] = (int(memory), int(utilization))
+    busy = {
+        gpu: observed.get(gpu)
+        for gpu in gpu_ids
+        if gpu not in observed or observed[gpu][0] > 1024 or observed[gpu][1] > 0
+    }
+    if busy:
+        raise RuntimeError(f"Selected GPUs are not idle (MiB, utilization percent): {busy}")
+
+
+def terminate_group(process: subprocess.Popen[str], wait_s: float = 10.0) -> None:
+    pgid = process.pid
+
+    def group_exists() -> bool:
+        try:
+            os.killpg(pgid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+
+    try:
+        os.killpg(pgid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + max(0.0, wait_s)
+    while group_exists() and time.monotonic() < deadline:
+        time.sleep(min(0.1, max(0.0, deadline - time.monotonic())))
+    if group_exists():
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        kill_deadline = time.monotonic() + 2.0
+        while group_exists() and time.monotonic() < kill_deadline:
+            time.sleep(0.1)
+    if process.poll() is None:
+        try:
+            process.wait(timeout=1.0)
+        except subprocess.TimeoutExpired:
+            pass
+    if group_exists():
+        raise RuntimeError(f"Owned process group {pgid} survived SIGKILL")
+
+
+class BudgetController:
+    def __init__(self, args: argparse.Namespace, log_dir: Path) -> None:
+        self.args = args
+        self.log_dir = log_dir
+        self.service_processes: list[subprocess.Popen[str]] = []
+        self.active_stage_process: subprocess.Popen[str] | None = None
+        self.started_at = 0.0
+        self.stage_records: list[dict[str, Any]] = []
+        self.state = "NOT_STARTED"
+        self.last_error = ""
+        self.full_budget_s = (args.max_gpu_min - args.prior_gpu_min) * 60 / len(args.gpu_ids)
+        self.cleanup_reserve_s = args.cleanup_reserve_gpu_min * 60 / len(args.gpu_ids)
+        self.work_budget_s = (
+            args.max_gpu_min - args.prior_gpu_min - args.cleanup_reserve_gpu_min
+        ) * 60 / len(args.gpu_ids)
+        if self.full_budget_s <= 0 or self.work_budget_s <= 0:
+            raise ValueError("Prior usage and cleanup reserve leave no GPU budget")
+
+    @property
+    def elapsed_s(self) -> float:
+        return 0.0 if not self.started_at else time.monotonic() - self.started_at
+
+    @property
+    def work_remaining_s(self) -> float:
+        return self.work_budget_s - self.elapsed_s
+
+    @property
+    def total_remaining_s(self) -> float:
+        return self.full_budget_s - self.elapsed_s
+
+    def save_state(self) -> None:
+        write_json(
+            self.args.budget_log,
+            {
+                "status": self.state,
+                "updated_at_utc": utc_now(),
+                "model": MODEL_NAME,
+                "gpu_ids": self.args.gpu_ids,
+                "gpu_count": len(self.args.gpu_ids),
+                "max_gpu_min": self.args.max_gpu_min,
+                "prior_gpu_min": self.args.prior_gpu_min,
+                "cleanup_reserve_gpu_min": self.args.cleanup_reserve_gpu_min,
+                "elapsed_wall_s": round(self.elapsed_s, 3),
+                "attempt_gpu_min": round(self.elapsed_s * len(self.args.gpu_ids) / 60, 3),
+                "cumulative_gpu_min": round(
+                    self.args.prior_gpu_min + self.elapsed_s * len(self.args.gpu_ids) / 60,
+                    3,
+                ),
+                "remaining_gpu_min": round(
+                    max(
+                        0.0,
+                        self.args.max_gpu_min
+                        - self.args.prior_gpu_min
+                        - self.elapsed_s * len(self.args.gpu_ids) / 60,
+                    ),
+                    3,
+                ),
+                "work_remaining_s": round(max(0.0, self.work_remaining_s), 3),
+                "cuda_home": self.args.cuda_home,
+                "sampling_backend": "vllm-native (VLLM_USE_FLASHINFER_SAMPLER=0)",
+                "last_error": self.last_error,
+                "stages": self.stage_records,
+                "logs_dir": str(self.log_dir),
+            },
+        )
+
+    def launch_services(self) -> None:
+        model_dir = Path(self.args.model_dir)
+        for path in (model_dir / "config.json", model_dir / "model.safetensors.index.json"):
+            if not path.is_file():
+                raise FileNotFoundError(f"Model file is missing: {path}")
+        check_gpus_free(tuple(self.args.gpu_ids))
+        check_ports_free((8004, 8005))
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+        self.started_at = time.monotonic()
+        self.state = "SERVERS_STARTING"
+        self.save_state()
+        gpu_groups = (self.args.gpu_ids[:2], self.args.gpu_ids[2:])
+        cuda_home = Path(self.args.cuda_home)
+        for replica, (port, gpus) in enumerate(zip((8004, 8005), gpu_groups)):
+            env = os.environ.copy()
+            env["CUDA_HOME"] = str(cuda_home)
+            env["CUDA_PATH"] = str(cuda_home)
+            env["PATH"] = f"{cuda_home / 'bin'}{os.pathsep}{env.get('PATH', '')}"
+            cuda_lib = str(cuda_home / "lib64")
+            env["LD_LIBRARY_PATH"] = os.pathsep.join(
+                part for part in (cuda_lib, env.get("LD_LIBRARY_PATH", "")) if part
+            )
+            env.update(
+                {
+                    "CUDA_VISIBLE_DEVICES": ",".join(str(gpu) for gpu in gpus),
+                    "VLLM_SERVER_DEV_MODE": "1",
+                    "HF_HUB_OFFLINE": "1",
+                    "TRANSFORMERS_OFFLINE": "1",
+                    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+                    "PYTHONUNBUFFERED": "1",
+                }
+            )
+            command = [
+                self.args.vllm_bin,
+                "serve",
+                str(model_dir),
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(port),
+                "--tensor-parallel-size",
+                "2",
+                "--dtype",
+                "bfloat16",
+                "--max-num-seqs",
+                "2",
+                "--enable-prefix-caching",
+                "--served-model-name",
+                MODEL_NAME,
+                "--max-model-len",
+                "8192",
+                "--tokenizer",
+                self.args.tokenizer_dir,
+            ]
+            with (self.log_dir / f"vllm-replica-{replica}.log").open(
+                "w", encoding="utf-8"
+            ) as log:
+                process = subprocess.Popen(
+                    command,
+                    env=env,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    start_new_session=True,
+                )
+            self.service_processes.append(process)
+        self.wait_until_ready()
+
+    def wait_until_ready(self) -> None:
+        required_metrics = (
+            "vllm:request_queue_time_seconds_count",
+            "vllm:request_prefill_time_seconds_count",
+            "vllm:request_decode_time_seconds_count",
+        )
+        last_error = "not ready"
+        while self.work_remaining_s > 0:
+            all_ready = True
+            for process, endpoint in zip(self.service_processes, WORKERS):
+                if process.poll() is not None:
+                    raise RuntimeError(f"vLLM exited during startup with code {process.returncode}")
+                try:
+                    http_text(endpoint + "/health")
+                except (OSError, URLError, TimeoutError) as exc:
+                    last_error = f"{type(exc).__name__}: {exc}"
+                    all_ready = False
+            if all_ready:
+                for endpoint in WORKERS:
+                    metrics = http_text(endpoint + "/metrics", timeout_s=5.0)
+                    missing = [name for name in required_metrics if name not in metrics]
+                    if missing:
+                        raise RuntimeError(f"Required metrics are absent at {endpoint}: {missing}")
+                    payload = json.loads(
+                        http_text(endpoint + "/reset_prefix_cache", method="POST")
+                    )
+                    if payload.get("success") is not True:
+                        raise RuntimeError(f"Prefix cache reset rejected at {endpoint}: {payload!r}")
+                self.state = "SERVERS_READY"
+                self.save_state()
+                return
+            time.sleep(min(2.0, max(0.1, self.work_remaining_s)))
+        raise TimeoutError(f"vLLM did not become ready before the work cutoff: {last_error}")
+
+    def run_stage(self, label: str, command: list[str], max_stage_s: float = 360.0) -> bool:
+        remaining = self.work_remaining_s
+        if remaining <= 0:
+            self.stage_records.append({"label": label, "status": "SKIPPED_BUDGET", "time_utc": utc_now()})
+            self.save_state()
+            return False
+        timeout_s = min(max_stage_s, remaining)
+        log_path = self.log_dir / f"{label}.log"
+        record: dict[str, Any] = {
+            "label": label,
+            "command": command,
+            "started_at_utc": utc_now(),
+            "timeout_s": round(timeout_s, 3),
+            "log": str(log_path),
+        }
+        self.state = f"RUNNING_{label}"
+        self.save_state()
+        stage_started = time.monotonic()
+        with log_path.open("w", encoding="utf-8") as log:
+            process = subprocess.Popen(
+                command,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                text=True,
+                start_new_session=True,
+            )
+            self.active_stage_process = process
+            try:
+                return_code = process.wait(timeout=timeout_s)
+            except subprocess.TimeoutExpired:
+                try:
+                    terminate_group(process, wait_s=min(10.0, max(1.0, self.total_remaining_s)))
+                except RuntimeError as exc:
+                    self.last_error = f"Stage process cleanup failed: {exc}"
+                record.update(
+                    {
+                        "status": "TIMED_OUT",
+                        "ended_at_utc": utc_now(),
+                        "elapsed_s": round(time.monotonic() - stage_started, 3),
+                    }
+                )
+                self.stage_records.append(record)
+                self.save_state()
+                raise TimeoutError(f"Stage {label} exceeded its {timeout_s:.1f}s budget")
+            except BaseException as interrupt_exc:
+                try:
+                    terminate_group(process, wait_s=min(10.0, max(1.0, self.total_remaining_s)))
+                except RuntimeError as cleanup_exc:
+                    self.last_error = f"Stage process cleanup failed: {cleanup_exc}"
+                record.update(
+                    {
+                        "status": "INTERRUPTED",
+                        "ended_at_utc": utc_now(),
+                        "elapsed_s": round(time.monotonic() - stage_started, 3),
+                        "interrupt": f"{type(interrupt_exc).__name__}: {interrupt_exc}",
+                    }
+                )
+                self.stage_records.append(record)
+                self.save_state()
+                raise
+            finally:
+                self.active_stage_process = None
+        record.update(
+            {
+                "status": "COMPLETE" if return_code == 0 else "FAILED",
+                "return_code": return_code,
+                "ended_at_utc": utc_now(),
+                "elapsed_s": round(time.monotonic() - stage_started, 3),
+            }
+        )
+        self.stage_records.append(record)
+        self.save_state()
+        if return_code != 0:
+            raise RuntimeError(f"Stage {label} failed with exit code {return_code}; see {log_path}")
+        return True
+
+    def python_command(self, script: Path, *arguments: str) -> list[str]:
+        return [self.args.python_bin, str(script), *arguments]
+
+    def run_experiments(self) -> None:
+        script_dir = Path(__file__).resolve().parent
+        project_dir = Path(__file__).resolve().parents[4]
+        profile_path = Path(self.args.output_dir) / "service_rate_profile.json"
+        output_profile = Path(self.args.output_profile)
+        common = [
+            "--workers",
+            *WORKERS,
+            "--model-name",
+            MODEL_NAME,
+            "--tokenizer-dir",
+            self.args.tokenizer_dir,
+            "--dataset",
+            self.args.dataset,
+            "--trace-json",
+            self.args.trace_json,
+            "--output-dir",
+            self.args.output_dir,
+            "--questions",
+            "8",
+            "--seed",
+            "20260930",
+            "--tree-ids",
+            "1",
+            "3",
+            "5",
+            "7",
+            "--max-concurrency",
+            "4",
+            "--router-capacity",
+            "2",
+            "--service-profile-json",
+            str(profile_path),
+            "--output-length-profile-json",
+            str(output_profile),
+            "--request-timeout-s",
+            "300",
+            "--reset-prefix-cache",
+            "--omit-output-text",
+        ]
+        calibrator = script_dir / "calibrate_vllm_service_rates.py"
+        runner = project_dir / "idea-stage/pilots/direction1/run_vllm_placement_pilot.py"
+        self.run_stage(
+            # Both replicas run the identical calibration set concurrently.
+            "service-calibration",
+            self.python_command(
+                calibrator,
+                "--workers",
+                *WORKERS,
+                "--trace-json",
+                self.args.trace_json,
+                "--tree-ids",
+                "0",
+                "2",
+                "4",
+                "6",
+                "--model-name",
+                MODEL_NAME,
+                "--max-tokens",
+                "128",
+                "--output-json",
+                str(profile_path),
+            ),
+        )
+        if not profile_path.is_file():
+            self.state = "INCOMPLETE_SERVICE_CALIBRATION"
+            self.save_state()
+            return
+        sanity = [
+            argument
+            for argument in common
+            if argument not in ("--tree-ids", "1", "3", "5", "7")
+        ]
+        sanity.extend(
+            [
+                "--tree-ids",
+                "1",
+                "--max-tokens-inner",
+                "64",
+                "--max-tokens-leaf",
+                "64",
+                "--run-label",
+                "sanity-tree1-64tok",
+            ]
+        )
+        if not self.run_stage(
+            "sanity-tree1",
+            self.python_command(runner, "--strategy", "kv-cost-group-tree", *sanity),
+        ):
+            self.state = "INCOMPLETE_SANITY_BUDGET"
+            self.save_state()
+            return
+
+        primary_common = [
+            argument
+            for argument in common
+            if argument not in ("--tree-ids", "1", "3", "5", "7")
+        ]
+        primary_common.extend(["--tree-ids", "1", "3", "5", "7"])
+        for label, strategy in PRIMARY_RUNS:
+            completed = self.run_stage(
+                label,
+                self.python_command(
+                    runner,
+                    "--strategy",
+                    strategy,
+                    *primary_common,
+                    "--max-tokens-inner",
+                    "1024",
+                    "--max-tokens-leaf",
+                    "1024",
+                    "--run-label",
+                    label,
+                ),
+            )
+            if not completed:
+                self.state = "INCOMPLETE_PRIMARY_BUDGET"
+                return
+
+        self.state = "PRIMARY_COMPLETE"
+        self.save_state()
+        all_references_complete = True
+        for label, strategy in OPTIONAL_RUNS:
+            if self.work_remaining_s < self.args.optional_run_reserve_s:
+                all_references_complete = False
+                self.stage_records.append(
+                    {
+                        "label": label,
+                        "status": "SKIPPED_OPTIONAL_BUDGET",
+                        "work_remaining_s": round(self.work_remaining_s, 3),
+                        "time_utc": utc_now(),
+                    }
+                )
+                self.save_state()
+                continue
+            try:
+                reference_completed = self.run_stage(
+                    label,
+                    self.python_command(
+                        runner,
+                        "--strategy",
+                        strategy,
+                        *primary_common,
+                        "--max-tokens-inner",
+                        "1024",
+                        "--max-tokens-leaf",
+                        "1024",
+                        "--run-label",
+                        label,
+                    ),
+                )
+                if not reference_completed:
+                    all_references_complete = False
+            except (TimeoutError, RuntimeError) as exc:
+                all_references_complete = False
+                self.last_error = f"{type(exc).__name__}: {exc}"
+                self.state = "PRIMARY_COMPLETE_REFERENCE_RUN_INCOMPLETE"
+                self.save_state()
+                return
+        self.state = (
+            "COMPLETE_WITH_REFERENCES"
+            if all_references_complete
+            else "PRIMARY_COMPLETE_REFERENCES_SKIPPED"
+        )
+        self.save_state()
+
+    def cleanup(self) -> None:
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            signal.signal(signum, signal.SIG_IGN)
+        owned_processes = list(self.service_processes)
+        if self.active_stage_process is not None:
+            owned_processes.insert(0, self.active_stage_process)
+        if not owned_processes:
+            return
+        for process in owned_processes:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        cleanup_deadline = time.monotonic() + max(0.0, self.total_remaining_s)
+        failures = []
+        for process in owned_processes:
+            try:
+                terminate_group(
+                    process,
+                    wait_s=max(0.0, min(8.0, cleanup_deadline - time.monotonic())),
+                )
+            except RuntimeError as exc:
+                failures.append(str(exc))
+        if failures:
+            self.last_error = "; ".join(filter(None, [self.last_error, *failures]))
+            self.state = "CLEANUP_INCOMPLETE"
+        try:
+            self.save_state()
+        except OSError:
+            print("Could not write final budget log after process cleanup", file=sys.stderr)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--vllm-bin", required=True)
+    parser.add_argument("--python-bin", required=True)
+    parser.add_argument("--cuda-home", required=True)
+    parser.add_argument("--model-dir", required=True)
+    parser.add_argument("--tokenizer-dir", required=True)
+    parser.add_argument("--dataset", required=True)
+    parser.add_argument("--trace-json", required=True)
+    parser.add_argument("--output-profile", required=True)
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--budget-log", required=True)
+    parser.add_argument("--logs-dir", required=True)
+    parser.add_argument("--gpu-ids", nargs=4, type=int, default=[4, 5, 6, 7])
+    parser.add_argument("--max-gpu-min", type=float, default=70.0)
+    parser.add_argument("--prior-gpu-min", type=float, default=0.0)
+    parser.add_argument("--cleanup-reserve-gpu-min", type=float, default=5.0)
+    parser.add_argument("--optional-run-reserve-s", type=float, default=360.0)
+    args = parser.parse_args()
+    if len(set(args.gpu_ids)) != 4 or any(gpu < 0 for gpu in args.gpu_ids):
+        parser.error("--gpu-ids must contain four distinct non-negative indices")
+    if args.prior_gpu_min < 0 or args.prior_gpu_min >= args.max_gpu_min:
+        parser.error("--prior-gpu-min must be non-negative and less than --max-gpu-min")
+    if args.cleanup_reserve_gpu_min < 0 or (
+        args.prior_gpu_min + args.cleanup_reserve_gpu_min >= args.max_gpu_min
+    ):
+        parser.error("prior usage and cleanup reserve must leave positive work budget")
+    for path_arg in (
+        "vllm_bin",
+        "python_bin",
+        "cuda_home",
+        "model_dir",
+        "tokenizer_dir",
+        "dataset",
+        "trace_json",
+        "output_profile",
+    ):
+        path = Path(getattr(args, path_arg))
+        if not path.exists():
+            parser.error(f"{path_arg.replace('_', '-')} does not exist: {path}")
+        if path_arg == "cuda_home" and not (path / "bin/nvcc").is_file():
+            parser.error(f"CUDA toolkit has no bin/nvcc: {path}")
+    return args
+
+
+def main() -> int:
+    def request_stop(signum: int, _frame: Any) -> None:
+        raise KeyboardInterrupt(f"received signal {signum}")
+
+    for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        signal.signal(signum, request_stop)
+    args = parse_args()
+    args.output_dir = str(Path(args.output_dir).resolve())
+    args.budget_log = Path(args.budget_log).resolve()
+    args.logs_dir = str(Path(args.logs_dir).resolve())
+    for path_arg in (
+        "vllm_bin",
+        "python_bin",
+        "cuda_home",
+        "model_dir",
+        "tokenizer_dir",
+        "dataset",
+        "trace_json",
+        "output_profile",
+    ):
+        path = Path(getattr(args, path_arg))
+        # Resolving a venv's `bin/python` symlink discards its adjacent
+        # pyvenv.cfg, so child stages lose the runtime's site-packages.
+        normalized = Path(os.path.abspath(path)) if path_arg == "python_bin" else path.resolve()
+        setattr(args, path_arg, str(normalized))
+    output_dir = Path(args.output_dir)
+    if output_dir.exists() and any(output_dir.iterdir()):
+        raise SystemExit(f"Refusing to reuse a non-empty output directory: {output_dir}")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    args.budget_log.parent.mkdir(parents=True, exist_ok=True)
+    controller = BudgetController(args, Path(args.logs_dir))
+    exit_code = 2
+    try:
+        controller.launch_services()
+        controller.run_experiments()
+        exit_code = 0 if controller.state in (
+            "PRIMARY_COMPLETE",
+            "COMPLETE_WITH_REFERENCES",
+            "PRIMARY_COMPLETE_REFERENCES_SKIPPED",
+            "PRIMARY_COMPLETE_REFERENCE_RUN_INCOMPLETE",
+        ) else 2
+    except BaseException as exc:
+        controller.last_error = f"{type(exc).__name__}: {exc}"
+        primary_labels = {label for label, _ in PRIMARY_RUNS}
+        primary_records = [
+            stage for stage in controller.stage_records if stage.get("label") in primary_labels
+        ]
+        primary_complete = len(primary_records) == len(PRIMARY_RUNS) and all(
+            stage.get("status") == "COMPLETE" for stage in primary_records
+        )
+        optional_run_started = controller.state.startswith("RUNNING_reference-") or any(
+            stage.get("label", "").startswith("reference-") for stage in controller.stage_records
+        )
+        if primary_complete and optional_run_started:
+            controller.state = "PRIMARY_COMPLETE_REFERENCE_RUN_INCOMPLETE"
+        elif any(
+            stage.get("status") in ("TIMED_OUT", "INTERRUPTED")
+            and stage.get("label") in primary_labels
+            for stage in controller.stage_records
+        ) or any(stage.get("label") in primary_labels and stage.get("status") != "COMPLETE" for stage in primary_records):
+            controller.state = "INCOMPLETE_BUDGET_EVIDENCE"
+        elif controller.state != "INCOMPLETE_PRIMARY_BUDGET":
+            controller.state = "INCOMPLETE_OR_FAILED"
+        controller.save_state()
+        print(controller.last_error, file=sys.stderr)
+        return 2
+    finally:
+        controller.cleanup()
+        if controller.state == "CLEANUP_INCOMPLETE":
+            exit_code = 2
+    return exit_code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

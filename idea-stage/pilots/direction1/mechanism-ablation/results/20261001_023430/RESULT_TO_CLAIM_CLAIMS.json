@@ -1,0 +1,50 @@
+[
+  {
+    "id": "d1_1",
+    "claim": "B1-flat tree-completion median",
+    "value": "81.507395",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-flat_B1-flat_20261001_023645_SUMMARY.json"
+  },
+  {
+    "id": "d1_2",
+    "claim": "B1-tree tree-completion median",
+    "value": "89.887384",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-tree_B1-tree_20261001_023830_SUMMARY.json"
+  },
+  {
+    "id": "d1_3",
+    "claim": "B2-flat tree-completion median",
+    "value": "81.874364",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-flat_B2-flat_20261001_024156_SUMMARY.json"
+  },
+  {
+    "id": "d1_4",
+    "claim": "B2-tree tree-completion median",
+    "value": "90.297769",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-tree_B2-tree_20261001_024013_SUMMARY.json"
+  },
+  {
+    "id": "d1_5",
+    "claim": "B1-flat weighted queue mean",
+    "value": "6.917119154651453",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-flat_B1-flat_20261001_023645_SUMMARY.json"
+  },
+  {
+    "id": "d1_6",
+    "claim": "B1-tree weighted queue mean",
+    "value": "7.41573694359364",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-tree_B1-tree_20261001_023830_SUMMARY.json"
+  },
+  {
+    "id": "d1_7",
+    "claim": "B2-flat weighted queue mean",
+    "value": "6.945285985399479",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-flat_B2-flat_20261001_024156_SUMMARY.json"
+  },
+  {
+    "id": "d1_8",
+    "claim": "B2-tree weighted queue mean",
+    "value": "7.379756836784317",
+    "source": "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_023430/REAL_PLACEMENT_kv-cost-group-tree_B2-tree_20261001_024013_SUMMARY.json"
+  }
+]

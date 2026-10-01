@@ -1,0 +1,56 @@
+{
+  "status": "INCOMPLETE_OR_FAILED",
+  "updated_at_utc": "2026-10-01T02:29:45+00:00",
+  "model": "deepseek-r1-distill-llama-70b",
+  "gpu_ids": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "gpu_count": 4,
+  "max_gpu_min": 70.0,
+  "prior_gpu_min": 14.148,
+  "cleanup_reserve_gpu_min": 5.0,
+  "elapsed_wall_s": 132.283,
+  "attempt_gpu_min": 8.819,
+  "cumulative_gpu_min": 22.967,
+  "remaining_gpu_min": 47.033,
+  "work_remaining_s": 630.497,
+  "cuda_home": "/home/bumi/infra/runtime/cuda-toolkit-12-9/usr/local/cuda-12.9",
+  "sampling_backend": "vllm-native (VLLM_USE_FLASHINFER_SAMPLER=0)",
+  "last_error": "RuntimeError: Stage service-calibration failed with exit code 1; see /home/bumi/infra/cache/prismserve-direction1-mechanism-20261001_022701/service-calibration.log",
+  "stages": [
+    {
+      "label": "service-calibration",
+      "command": [
+        "/usr/bin/python3.10",
+        "/home/bumi/git/PrismServe/idea-stage/pilots/direction1/mechanism-ablation/calibrate_vllm_service_rates.py",
+        "--workers",
+        "http://127.0.0.1:8004",
+        "http://127.0.0.1:8005",
+        "--trace-json",
+        "/home/bumi/git/PrismServe/idea-stage/pilots/direction1/REAL_PLACEMENT_TRACE_20260930_074612.json",
+        "--tree-ids",
+        "0",
+        "2",
+        "4",
+        "6",
+        "--model-name",
+        "deepseek-r1-distill-llama-70b",
+        "--max-tokens",
+        "128",
+        "--output-json",
+        "/home/bumi/git/PrismServe/idea-stage/pilots/direction1/mechanism-ablation/results/20261001_022701/service_rate_profile.json"
+      ],
+      "started_at_utc": "2026-10-01T02:29:25+00:00",
+      "timeout_s": 360.0,
+      "log": "/home/bumi/infra/cache/prismserve-direction1-mechanism-20261001_022701/service-calibration.log",
+      "status": "FAILED",
+      "return_code": 1,
+      "ended_at_utc": "2026-10-01T02:29:25+00:00",
+      "elapsed_s": 0.114
+    }
+  ],
+  "logs_dir": "/home/bumi/infra/cache/prismserve-direction1-mechanism-20261001_022701"
+}

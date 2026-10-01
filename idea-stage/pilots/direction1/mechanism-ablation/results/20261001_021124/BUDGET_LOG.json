@@ -1,0 +1,20 @@
+{
+  "status": "INCOMPLETE_OR_FAILED",
+  "updated_at_utc": "2026-10-01T02:13:47+00:00",
+  "model": "deepseek-r1-distill-llama-70b",
+  "gpu_ids": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "gpu_count": 4,
+  "max_gpu_min": 70.0,
+  "cleanup_reserve_gpu_min": 5.0,
+  "elapsed_wall_s": 98.1,
+  "elapsed_gpu_min": 6.54,
+  "work_remaining_s": 876.9,
+  "last_error": "RuntimeError: vLLM exited during startup with code 1",
+  "stages": [],
+  "logs_dir": "/home/bumi/infra/cache/prismserve-direction1-mechanism-20261001_021124"
+}
