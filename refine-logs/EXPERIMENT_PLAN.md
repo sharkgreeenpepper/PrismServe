@@ -1,0 +1,107 @@
+# 方向一：独立自然生成 cohort 扩展计划
+
+**状态：** 草案，尚未冻结、尚未启动  
+**日期：** 2026-10-03（Asia/Shanghai）  
+**问题：** 当前树感知启发式在新 GSM8K 问题上能否带来稳定的自然生成树完成延迟收益？
+
+## Claim Map
+
+| Claim | 为什么重要 | 最低证据 | 实验块 |
+|---|---|---|---|
+| C1（主张）在相同队列/KV 成本估计和 sibling-ready 分配器下，加入预测剩余子树工作量可使自然生成树延迟至少降低 5%。 | 当前 4 题独立 cohort 的筛查结果为 inconclusive，尚不能判断树级异质性是否会在新题目上重复。 | 新独立问题；flat/tree 成对回放；两个顺序反转 block；逐题配对统计与区间；关键原始输出可复核。 | B1 |
+| C2（辅助）延迟变化不是仅由生成 token 工作量或队列状态差异解释。 | 既有 fixed-output 诊断总体差异不足 1%，但样本过小且无法证明因果。 | 仅在 B1 出现信号或生成工作仍明显不平衡时，增加同 cohort 的固定输出长度诊断；将其作为解释性证据。 | B2 |
+
+**不主张：** correctness non-inferiority、p95/SLO 改善、所有 workload 上的普遍收益、KV 迁移收益或 live-search 调度收益。
+
+## 论文叙事与范围
+
+- 主结果只回答当前启发式在自然生成 GSM8K 树上的配对延迟筛查。
+- correctness、queue/prefill/decode、生成 token 数和结束原因作为次级诊断指标。
+- 固定输出只用于解释工作量差异；除非出现新信号，否则不再重复。
+- 不添加 local-only、least-loaded 或新调度器基线；这些参考策略未参与当前核心 claim。
+- 当前 cohort 与下一 cohort 分开报告。只有在明确记录 cohort、session 和顺序项的敏感性模型后，才可作跨 cohort 汇总。
+
+## 实验块
+
+### B0：输入与产物完整性预检
+
+- **主张：** 下一轮的 trace、输出和超时记录能够被独立定位和复算。
+- **数据：** GSM8K test；从已使用索引之外确定性抽取新索引。
+- **设置：** 使用逻辑数据集 ID 和本地环境变量解析数据路径；冻结样本索引、tree shape、prompt token counts、运行配置。
+- **产物：** 运行前生成路径无关的 trace；manifest 记录数据集版本、样本索引、trace 规范化 SHA-256、导出文件 SHA-256、配置哈希和每次运行的 parent/run ID。运行器必须把逐请求 CSV 和 completion text 以可恢复的检查点写盘。
+- **成功门：** 本地 tokenizer 与服务端逐节点 prompt token 数完全一致；manifest 与运行器可复算样本和 trace；每个 partial attempt 即使超时也有完整的已完成行。
+- **失败解释：** 任一字段或检查点不能被复算时，停止在无 GPU 预检，不启动主矩阵。
+- **优先级：** MUST-RUN；预估 GPU-min：0。
+
+### B1：16 题自然生成配对筛查
+
+- **主张：** tree-aware 的剩余工作量项是否在独立问题上带来至少 5% 的配对树完成延迟改善。
+- **数据：** GSM8K test 中 16 道全新问题，每种 balanced、broad、chain、skewed tree shape 各 4 道。已知先前 direction-1 研究使用 12 个索引；从剩余索引抽样，冻结新种子与索引清单，不在运行后替换难例。
+- **候选系统：** 仅比较 kv-cost-group-flat 与 kv-cost-group-tree；vLLM、模型、sampler、GPU、服务参数和输出长度先验保持与上一轮一致。
+- **输入生成：** 每个新问题先由 local-only 做一次自然生成来冻结 parent-history trace；该 source pass 不计入策略比较。temperature=0，保留自然 EOS，单请求上限 1,024 tokens，不固定输出长度。
+- **顺序：** B1 为 flat→tree，B2 为 tree→flat；两个 block 使用同一组 16 个 frozen traces。每个 arm 前清 prefix cache；同一 block 内不重启模型。block 的具体开始时间、session ID 和每个 arm 的顺序都写入日志。
+- **主要指标：** 对每个问题，分别取 B1/B2 下 flat 和 tree 的树完成时间中位数；计算配对 speedup，公式为 s_i = 1 - T_tree_i / T_flat_i。主汇总为 16 个问题级 speedup 的中位数，并按 tree shape 分层 bootstrap 95% 区间。两个 block 的单独中位数也报告。单位是问题/tree，不能把节点当独立样本。
+- **次级指标：** 每题 exact-match 与解析结果、完整 completion text、prompt/completion tokens、finish reason、逐请求延迟、tree completion、每副本 queue/prefill/decode histogram、客户端等待、cache 与路由决策。
+- **队列压力门：** 每个 block 的 flat 和 tree arm 均要求按副本请求数加权 mean queue wait ≥0.1 秒；不满足时只称为该运行负载下的延迟比较，不称作队列压力筛查。
+- **成功标准：** 点估计中位 speedup ≥5%；分层 bootstrap 95% 区间下界 >0；B1、B2 两个 block 的点估计均为正；队列门通过。此条件是预先定义的筛查标准，不等同于充分统计功效或普遍性证明。
+- **反向信号：** 区间上界 <0 且两个 block 都为负时，报告该 workload 下当前启发式更慢的证据。
+- **其他结果：** 其余情况一律 inconclusive；不在运行后调阈值，不作 correctness non-inferiority。
+- **失败与重启：** 请求启动后的任何 timeout 都保留 partial CSV、输出与账本，并停止本轮 cohort，标记为 incomplete；不重跑单臂或只补未完成请求。只有在第一条请求发出前的服务启动/配置故障，才允许对整个配对 block 按相同顺序重试一次，并分配新的 session/block ID。重试再次失败时停止。未完成两个有效 block 时不出正向或反向结论。
+- **优先级：** MUST-RUN；样本量为实用筛查目标，不声称已由当前 n=4 pilot 完成正式 power analysis。
+
+### B2：固定输出长度诊断
+
+- **主张：** B1 的延迟差异是否与生成工作量不同有关。
+- **数据与系统：** 仅复用 B1 的 16 个问题与 frozen traces；flat/tree 两策略都固定生成 256 completion tokens，使用与既有固定输出诊断相同的强制长度机制。
+- **指标：** 与 B1 相同的配对树完成指标，并检查 completion-token 总量是否一致。
+- **成功标准：** 不单独支持自然生成主张；仅报告是否仍看到同方向的差异。
+- **触发条件：** B1 产生 ≥5% 信号，或 B1 的 completion token 差异足以混淆延迟解释时才运行。
+- **优先级：** NICE-TO-HAVE；B1 后另行批准预算，不得挤占 B1 的配对预算。
+
+## Run Order and Milestones
+
+| Milestone | 目标 | 运行项 | 决策门 | 预算 |
+|---|---|---|---|---|
+| M0 | 让 trace、输出、timeout 记录可复核 | 数据索引冻结；路径无关 trace；逐请求与输出检查点的离线预检 | 所有哈希、prompt count 与恢复检查通过才进入 GPU 阶段 | 0 GPU-min |
+| M1 | 生成 16 个新 frozen traces 并校准 | source pass；相同配置的 service-rate calibration | token counts 对齐；预算账本、completion text、partial CSV 正常落盘 | 计入 B1 |
+| M2 | 完成主配对筛查 | B1 flat→tree；B2 tree→flat | 两个 block 完整且 queue gate 通过；否则报告 incomplete/inconclusive | 见预算章节 |
+| M3 | 复算并作 claim 判断 | 按问题配对，按 shape bootstrap；发布全量输出清单与哈希 | 严格按冻结标准分类 positive/reverse/inconclusive | 0 GPU-min |
+| M4 | 解释生成工作混淆 | 条件满足时运行固定输出诊断 | 只作辅助解释；若未触发则跳过 | 单独预算 |
+
+## Compute and Data Budget
+
+- 上一轮 4 题 cohort 使用 79.508 GPU-min，其中含两次超时与重启。按题数线性外推，16 题约为 318 GPU-min。
+- **规划额度：** 总上限 400 GPU-min（4 张 GPU 计入；其中 20 GPU-min 预留进程清理，最多 380 GPU-min 用于运行）。在 GPU 4–7 同时占用的口径下，上限约为 100 分钟墙钟时间。此为粗略容量估算，不是已批准或已提交的 GPU 任务。
+- 不创建多个低预算重启来拼接 partial runs。执行器应在启动前按一个总预算账本规划两个 block；如果现有平台单作业预算不足，需先调整受控作业编排，使 block/session 和配对规则保持明确。
+- **样本量限制：** 16 题是筛查目标，不是已验证的 powered sample。当前 n=4 无法可靠估计方差。正式论文级确认需要基于盲化先导方差做样本量计算；若 16 题的区间仍宽，应独立增补新 cohort，而不是重复同一批题。
+- **数据准备：** GSM8K test 新索引 16 条；记录 dataset version/文件哈希、索引、树形与 frozen prompt trace。绝对 infra 路径只保存在本地运行配置中，不提交 Git。
+- **人类评测：** 不需要。
+- **主要瓶颈：** 模型自然生成长度导致延迟和总 GPU 时间波动；其次是 4 个 arms 的成对完成与 timeout checkpoint 保持。
+
+## Risks and Mitigations
+
+- **输出长度差异混淆调度收益：** 主要结论保留 natural generation；保存所有 completion text 和 token 计数；按预定触发条件运行 fixed-output 诊断。
+- **session / 时间顺序混淆：** 两个 block 顺序反转；记录 session ID；不把不同 session 的单臂拼成一对。
+- **partial 结果丢失：** 每请求原子检查点；执行后立即校验 timeout CSV 和预算账本存在；B0 失败即不启动 GPU。
+- **路径脱敏造成 hash 不一致：** trace 不写绝对路径；记录稳定的规范化 hash 与导出文件 hash；本地 dataset locator 放在未提交配置中。
+- **样本量仍不足：** 把 16 题结果称为筛查；若区间未达到预设宽度，登记新 cohort 并重新计算样本量，不把 pilot 数据当成充分功效依据。
+- **预算超限：** 一旦达到 400 GPU-min 的停止线，保留产物并报告 incomplete；不为完成正向结果继续加预算。
+
+## First Runs to Launch After Plan Approval
+
+1. M0：离线验证新路径无关 trace、hash manifest、completion-text 与 partial-CSV 检查点。
+2. M1：从剩余 GSM8K 索引生成 16 个 natural-history traces 并运行 token-count 对齐。
+3. M2：按冻结顺序执行 paired natural-generation blocks。
+
+开始 M1/M2 前需要单独确认最多 400 GPU-min 的新预算；本草案不代表 GPU 运行已经获批。
+
+## Final Checklist
+
+- [x] 主张聚焦于当前机制和自然生成延迟。
+- [x] 把质量结论限定为描述性结果。
+- [x] 新问题与旧索引分离。
+- [x] 两个反序 block、逐问题配对与 timeout 规则预先声明。
+- [x] Must-run 与 nice-to-have 分开。
+- [ ] 基于先导方差完成正式 power analysis（当前 n=4 不足以可靠估计）。
+- [ ] 用户冻结样本、预算与执行顺序后再启动。
+
