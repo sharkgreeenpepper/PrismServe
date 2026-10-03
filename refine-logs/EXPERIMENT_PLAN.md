@@ -1,6 +1,6 @@
 # 方向一：独立自然生成 cohort 扩展计划
 
-**状态：** 已批准并冻结样本与 400 GPU-min 上限；M0 离线预检通过，尚未启动 GPU 任务
+**状态：** 实验已完成；按冻结 B1 规则判为 INCONCLUSIVE；GPU 用量 142.655 / 400 GPU-min，20 GPU-min 清理预留保留
 **冻结时间：** 2026-10-03 23:05（Asia/Shanghai）
 **问题：** 当前树感知启发式在新 GSM8K 问题上能否带来稳定的自然生成树完成延迟收益？
 
@@ -26,7 +26,7 @@
 ### B0：输入与产物完整性预检
 
 - **主张：** 下一轮的 trace、输出和超时记录能够被独立定位和复算。
-- **数据：** GSM8K test；从已使用索引之外确定性抽取新索引。
+- **数据：** GSM8K test；用冻结 seed 从完整候选索引中抽样，并拒绝与此前 12 个索引重叠的候选，保存抽中的索引与排除清单。
 - **设置：** 使用逻辑数据集 ID 和本地环境变量解析数据路径；冻结样本索引、tree shape、prompt token counts、运行配置。
 - **产物：** 首个 GPU 请求前冻结数据集 SHA-256、16 个样本索引、排除的历史索引、运行配置和 400 GPU-min 预算。离线用既有 trace 验证路径无关导出与规范化 SHA-256；检查点写入器在临时目录做零 GPU 的恢复演练。实际 cohort trace 由 M1 source pass 产生，立刻复算导出 SHA-256、规范化 SHA-256、配置哈希和 parent/run ID。
 - **成功门：** 启动 source pass 前，样本清单与数据集哈希可复算、离线 trace/检查点预检通过。source pass 后，本地 tokenizer 与服务端逐节点 prompt token 数完全一致，manifest 与 trace 可复算，并且 source CSV 含完整 completion text；全部满足后才允许校准和主矩阵。
@@ -36,10 +36,10 @@
 ### B1：16 题自然生成配对筛查
 
 - **主张：** tree-aware 的剩余工作量项是否在独立问题上带来至少 5% 的配对树完成延迟改善。
-- **数据：** GSM8K test 中 16 道全新问题，每种 balanced、broad、chain、skewed tree shape 各 4 道。已知先前 direction-1 研究使用 12 个索引；从剩余索引抽样，冻结新种子与索引清单，不在运行后替换难例。
+- **数据：** GSM8K test 中 16 道全新问题，每种 balanced、broad、chain、skewed tree shape 各 4 道。执行器从完整数据集候选中按冻结 seed 抽样，并拒绝与先前 12 个索引重叠的候选；冻结最终索引清单，不在运行后替换难例。
 - **候选系统：** 仅比较 kv-cost-group-flat 与 kv-cost-group-tree；vLLM、模型、sampler、GPU、服务参数和输出长度先验保持与上一轮一致。
 - **输入生成：** 每个新问题先由 local-only 做一次自然生成来冻结 parent-history trace；该 source pass 不计入策略比较。temperature=0，保留自然 EOS，单请求上限 1,024 tokens，不固定输出长度。
-- **顺序：** B1 为 flat→tree，B2 为 tree→flat；两个 block 使用同一组 16 个 frozen traces。每个 arm 前清 prefix cache；同一 block 内不重启模型。block 的具体开始时间、session ID 和每个 arm 的顺序都写入日志。
+- **顺序：** B1 为 flat→tree，B2 为 tree→flat；两个 block 使用同一组 16 个 frozen traces。每个 arm 前清 prefix cache；同一 block 内不重启模型。实际日志记录 arm 标签和启动时间，但结果 schema 没有独立 session ID 字段；因此只能按标签与时间回溯顺序，不能单独估计 session 效应。
 - **主要指标：** 对每个问题，分别取 B1/B2 下 flat 和 tree 的树完成时间中位数；计算配对 speedup，公式为 s_i = 1 - T_tree_i / T_flat_i。主汇总为 16 个问题级 speedup 的中位数，并按 tree shape 分层 bootstrap 95% 区间。两个 block 的单独中位数也报告。单位是问题/tree，不能把节点当独立样本。
 - **次级指标：** 每题 exact-match 与解析结果、完整 completion text、prompt/completion tokens、finish reason、逐请求延迟、tree completion、每副本 queue/prefill/decode histogram、客户端等待、cache 与路由决策。
 - **队列压力门：** 每个 block 的 flat 和 tree arm 均要求按副本请求数加权 mean queue wait ≥0.1 秒；不满足时只称为该运行负载下的延迟比较，不称作队列压力筛查。
@@ -88,7 +88,7 @@
 - **样本量仍不足：** 把 16 题结果称为筛查；若区间未达到预设宽度，登记新 cohort 并重新计算样本量，不把 pilot 数据当成充分功效依据。
 - **预算超限：** 一旦达到 400 GPU-min 的停止线，保留产物并报告 incomplete；不为完成正向结果继续加预算。
 
-## First Runs to Launch After Plan Approval
+## First Runs to Launch After Plan Approval (historical plan; completed)
 
 1. M0：离线冻结并复算样本 manifest；已用既有 trace 和临时 partial CSV 验证路径无关哈希与检查点恢复。
 2. M1：在总账内运行 source pass，生成 16 个 natural-history traces；逐节点 token 对齐并验证 source completion text 后，才进入校准。
@@ -106,4 +106,15 @@
 - [ ] 基于先导方差完成正式 power analysis（当前 n=4 不足以可靠估计）。
 - [x] 用户批准 400 GPU-min；冻结 seed、16 个样本索引、执行顺序和清理预留。
 - [x] M0 离线样本、fixture trace 哈希/token count、路径脱敏与 partial CSV 恢复预检通过（0 GPU-min）。
-- [ ] 执行代码合并到 main 后，才启动 GPU source pass。
+- [x] 执行代码通过 PR 合并到 main 后，才启动 GPU source pass。
+
+## Completed run record (2026-10-04)
+
+- Run ID: `direction1-gsm8k-independent-20261003-seed20261003`; model: `deepseek-r1-distill-llama-70b`; four GPUs (IDs 4–7); vLLM native sampler (`VLLM_USE_FLASHINFER_SAMPLER=0`).
+- Source pass, frozen-trace build, calibration, and all four natural-generation arms completed with exit code 0. All arms contain 128 request rows and 16 tree rows; completion text is present; prompt-token mismatches are 0. The frozen trace has 128 nodes.
+- Frozen primary estimate: median per-question paired speedup **−0.448935%**, shape-stratified bootstrap 95% CI **[−2.558685%, +1.253746%]** (50,000 replicates, seed 20261003). B1: −0.417187%; B2: −0.480708%. Queue gate passed in every arm; per-replica mean queue time ranged from 10.448 to 11.087 seconds.
+- Frozen positive and reverse criteria both fail; classification is **INCONCLUSIVE**. This screen does not support the ≥5% benefit claim and does not establish a slowdown. Correctness remains descriptive; no correctness non-inferiority claim is made.
+- Tree arms used 57,396 completion tokens per block versus 57,704 for flat (−0.53%); majority exact match was 15/16 versus 16/16, with the same tree-arm miss at dataset index 57 in both blocks. Fixed-output diagnostics were not triggered and were not run. Optional reference arms were skipped under the frozen plan.
+- Budget ledger: 142.655 / 400 GPU-min used; 257.345 GPU-min remained, including the retained 20 GPU-min cleanup reserve. All vLLM processes stopped and GPUs were idle after cleanup.
+- Reviewer status: the deterministic evidence precheck found all 5/5 cited values in the source text (presence only). The same-family GPT-6-Astra light integrity audit returned **WARN**; no fabrication or self-normalization was found, while scope/session/schema limitations remain. The same-family result-to-claim review returned `claim_supported: no`, with provisional acceptance pending external review.
+- See [`INDEPENDENT_COHORT_RESULTS_20261003.md`](INDEPENDENT_COHORT_RESULTS_20261003.md) for arm-level metrics, artifact hashes, interpretation, and limitations. The frozen thresholds above were not changed after execution.
