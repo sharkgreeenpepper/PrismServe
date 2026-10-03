@@ -16,6 +16,7 @@ import hashlib
 import itertools
 import json
 import math
+import os
 import random
 import re
 import statistics
@@ -42,6 +43,32 @@ SYSTEM_PROMPT = (
     "each search step short."
 )
 NUMBER_RE = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?")
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def sha256_tree(directory: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+        digest.update(path.relative_to(directory).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+    return digest.hexdigest()
+
+
+def canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 @dataclass
@@ -705,6 +732,7 @@ async def run_policy(
     tree_completed: dict[int, int] = {tree.tree_id: 0 for tree in trees}
     tree_latencies: dict[int, float] = {}
     request_rows: list[dict[str, Any]] = []
+    task_context: dict[asyncio.Task[dict[str, Any]], dict[str, Any]] = {}
     def make_node(tree: TreePlan, node_id: int, history: list[dict[str, str]] | None = None) -> RuntimeNode:
         trace_messages = None if prompt_trace is None else prompt_trace[(tree.tree_id, node_id)]
         if trace_messages is not None:
@@ -830,12 +858,69 @@ async def run_policy(
                         name=f"{node.tree.tree_id:06d}:{node.plan.node_id:06d}",
                     )
                     pending.add(task)
+                    task_context[task] = {
+                        "tree_id": node.tree.tree_id,
+                        "dataset_index": node.tree.dataset_index,
+                        "shape": node.tree.shape,
+                        "node_id": node.plan.node_id,
+                        "worker": worker,
+                    }
 
             if not pending:
                 continue
             done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+            completed_results: list[dict[str, Any]] = []
+            task_errors: list[BaseException] = []
+
+            def record_task_failure(
+                task: asyncio.Task[dict[str, Any]],
+                error: BaseException,
+                status: str = "FAILED",
+            ) -> None:
+                context = task_context.get(task, {})
+                failure_row = {
+                    **args._run_provenance,
+                    **context,
+                    "status": status,
+                    "error_type": type(error).__name__,
+                    "error_message": str(error)[:2000],
+                    "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+                }
+                failure_path = getattr(args, "_failure_path", None)
+                if failure_path is not None:
+                    path = Path(failure_path)
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    with path.open("a", encoding="utf-8") as stream:
+                        stream.write(json.dumps(failure_row, ensure_ascii=False) + "\n")
+                        stream.flush()
+                        os.fsync(stream.fileno())
+
             for task in sorted(done, key=lambda completed: completed.get_name()):
-                result = task.result()
+                try:
+                    completed_results.append(task.result())
+                except BaseException as exc:
+                    task_errors.append(exc)
+                    record_task_failure(task, exc)
+                finally:
+                    task_context.pop(task, None)
+            if task_errors and pending:
+                draining_tasks = list(pending)
+                for task in draining_tasks:
+                    task.cancel()
+                drained = await asyncio.gather(*draining_tasks, return_exceptions=True)
+                for task, result in zip(draining_tasks, drained):
+                    if isinstance(result, dict):
+                        completed_results.append(result)
+                    elif isinstance(result, BaseException):
+                        status = (
+                            "CANCELLED_AFTER_SIBLING_FAILURE"
+                            if isinstance(result, asyncio.CancelledError)
+                            else "FAILED_WHILE_ABORTING"
+                        )
+                        record_task_failure(task, result, status)
+                    task_context.pop(task, None)
+                pending = set()
+            for result in completed_results:
                 route: RouteChoice = result["route"]
                 worker = route.worker
                 node = route.node
@@ -888,6 +973,7 @@ async def run_policy(
                         "answer_parse_status": parse_status,
                         "correct": bool(prediction == tree.expected_answer) if node.is_leaf else "",
                     }
+                request_row.update(args._run_provenance)
                 if not args.omit_output_text:
                     request_row["content"] = result["content"]
                 request_rows.append(request_row)
@@ -916,6 +1002,8 @@ async def run_policy(
                     for child in child_group:
                         node_ready_offset_s[(tree.tree_id, child.plan.node_id)] = child_ready_offset_s
                     ready_groups.append(child_group)
+            if task_errors:
+                raise task_errors[0]
         inference_wall_time_s = time.perf_counter() - policy_start
     finally:
         await asyncio.gather(*(client.aclose() for client in clients))
@@ -1158,16 +1246,22 @@ async def run_policy(
         ),
         "vllm_request_queue_observation_count": total_queue_metric_count,
     }
+    for row in tree_rows:
+        row.update(args._run_provenance)
     return {"summary": summary, "requests": request_rows, "trees": tree_rows}
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
-    with path.open("w", newline="", encoding="utf-8") as stream:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.replace(path)
 
 
 def append_checkpoint_row(path: Path, row: dict[str, Any]) -> None:
@@ -1179,6 +1273,7 @@ def append_checkpoint_row(path: Path, row: dict[str, Any]) -> None:
             writer.writeheader()
         writer.writerow(row)
         stream.flush()
+        os.fsync(stream.fileno())
 
 
 async def async_main(args: argparse.Namespace) -> None:
@@ -1234,24 +1329,96 @@ async def async_main(args: argparse.Namespace) -> None:
         prompt_trace = {
             key: messages for key, messages in prompt_trace.items() if key[0] in selected_ids
         }
-        trace_digest = hashlib.sha256(trace_path.read_bytes()).hexdigest()
+        trace_digest = sha256_file(trace_path)
+        manifest_path = trace_path.with_suffix(".manifest.json")
+        if not manifest_path.is_file():
+            raise ValueError("Frozen trace has no companion cohort manifest")
+        trace_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        dataset_digest = sha256_file(Path(args.dataset))
+        tokenizer_digest = sha256_tree(Path(args.tokenizer_dir))
+        if (
+            trace_manifest.get("status") != "TRACE_FROZEN"
+            or trace_manifest.get("cohort_id") != args.experiment_id
+            or trace_manifest.get("dataset_id") != args.dataset_id
+            or trace_manifest.get("dataset_sha256") != dataset_digest
+            or trace_manifest.get("tokenizer_sha256") != tokenizer_digest
+            or trace_manifest.get("selected_dataset_indices")
+            != [tree.dataset_index for tree in all_trees]
+            or trace_manifest.get("source_requests_sha256")
+            != trace_data.get("source_requests_sha256")
+            or trace_manifest.get("source_run_id") != trace_data.get("source_run_id")
+            or trace_manifest.get("trace_file_sha256") != trace_digest
+            or trace_manifest.get("trace_canonical_sha256") != canonical_sha256(trace_data)
+            or trace_manifest.get("prompt_token_count_mismatches")
+            or trace_data.get("prompt_token_count_mismatches")
+        ):
+            raise ValueError("Frozen trace and cohort manifest failed integrity validation")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     run_label = re.sub(r"[^A-Za-z0-9_-]+", "-", args.run_label).strip("-")
     label = f"_{run_label}" if run_label else ""
     prefix = f"REAL_PLACEMENT_{args.strategy}{label}_{stamp}"
+
+    def optional_file_sha256(path_text: str) -> str | None:
+        if not path_text:
+            return None
+        path = Path(path_text)
+        if not path.is_file():
+            return None
+        return sha256_file(path)
+
+    run_id = args.run_id or f"{args.strategy}:{run_label or stamp}:{stamp}"
+    run_config = {
+        "strategy": args.strategy,
+        "model": args.model_name,
+        "dataset_id": args.dataset_id,
+        "dataset_sha256": optional_file_sha256(args.dataset),
+        "dataset_seed": args.seed,
+        "selected_dataset_indices": [tree.dataset_index for tree in trees],
+        "tree_shapes": {str(tree.tree_id): tree.shape for tree in trees},
+        "trace_sha256": trace_digest,
+        "tokenizer_sha256": sha256_tree(Path(args.tokenizer_dir)),
+        "service_profile_sha256": optional_file_sha256(args.service_profile_json),
+        "output_length_profile_sha256": optional_file_sha256(args.output_length_profile_json),
+        "max_tokens_inner": args.max_tokens_inner,
+        "max_tokens_leaf": args.max_tokens_leaf,
+        "fixed_output_tokens": args.fixed_output_tokens,
+        "temperature": 0,
+        "max_concurrency": args.max_concurrency,
+        "router_capacity": args.router_capacity or args.max_concurrency,
+        "request_timeout_s": args.request_timeout_s,
+        "reset_prefix_cache": args.reset_prefix_cache,
+        "block_size": args.block_size,
+    }
+    args._run_provenance = {
+        "experiment_id": args.experiment_id,
+        "run_id": run_id,
+        "parent_run_id": args.parent_run_id,
+        "dataset_id": args.dataset_id,
+        "dataset_sha256": run_config["dataset_sha256"],
+        "trace_sha256": trace_digest or "",
+        "run_config_sha256": canonical_sha256(run_config),
+    }
     args._checkpoint_path = out / f"{prefix}_REQUESTS.partial.csv"
+    args._failure_path = out / f"{prefix}_FAILURES.jsonl"
     result = await run_policy(args, trees, tokenizer, prompt_trace)
     write_csv(out / f"{prefix}_REQUESTS.csv", result["requests"])
     args._checkpoint_path.unlink(missing_ok=True)
     write_csv(out / f"{prefix}_TREES.csv", result["trees"])
     summary = result["summary"]
-    summary["dataset_path"] = args.dataset
+    summary.update(args._run_provenance)
+    summary["dataset_id"] = args.dataset_id
+    summary["dataset_sha256"] = run_config["dataset_sha256"]
     summary["dataset_source"] = "https://github.com/openai/grade-school-math"
     summary["dataset_seed"] = args.seed
-    summary["prompt_trace_path"] = args.trace_json or ""
     summary["prompt_trace_sha256"] = trace_digest or ""
+    summary["service_profile_sha256"] = run_config["service_profile_sha256"]
+    summary["output_length_profile_sha256"] = run_config[
+        "output_length_profile_sha256"
+    ]
+    summary.pop("service_profile_json", None)
+    summary.pop("output_length_profile_json", None)
     summary["selected_dataset_indices"] = [tree.dataset_index for tree in trees]
     summary["tree_shapes"] = {tree.tree_id: tree.shape for tree in trees}
     summary["note"] = (
@@ -1266,9 +1433,13 @@ async def async_main(args: argparse.Namespace) -> None:
         "service estimates use the explicit assumptions or calibration profile recorded above. "
         "With a small number of trees, p95 is the maximum observed latency and is exploratory."
     )
-    (out / f"{prefix}_SUMMARY.json").write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    summary_path = out / f"{prefix}_SUMMARY.json"
+    summary_temp = summary_path.with_suffix(summary_path.suffix + ".tmp")
+    with summary_temp.open("w", encoding="utf-8") as stream:
+        stream.write(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    summary_temp.replace(summary_path)
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 
@@ -1279,6 +1450,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-name", default="deepseek-r1-distill-llama-70b")
     parser.add_argument("--tokenizer-dir", required=True)
     parser.add_argument("--dataset", required=True, help="GSM8K test.jsonl path")
+    parser.add_argument("--dataset-id", default="gsm8k:test")
+    parser.add_argument("--experiment-id", default="")
+    parser.add_argument("--run-id", default="")
+    parser.add_argument("--parent-run-id", default="")
     parser.add_argument(
         "--trace-json",
         default="",
