@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import random
 import signal
 import socket
 import subprocess
@@ -38,8 +40,19 @@ def utc_now() -> str:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     temp = path.with_suffix(path.suffix + ".tmp")
-    temp.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    with temp.open("w", encoding="utf-8") as stream:
+        stream.write(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
     temp.replace(path)
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def http_text(url: str, method: str = "GET", timeout_s: float = 2.0) -> str:
@@ -153,7 +166,17 @@ class BudgetController:
             {
                 "status": self.state,
                 "updated_at_utc": utc_now(),
+                "experiment_id": self.args.experiment_id,
                 "model": MODEL_NAME,
+                "dataset_id": "gsm8k:test",
+                "dataset_sha256": file_sha256(Path(self.args.dataset)),
+                "dataset_seed": self.args.seed,
+                "selected_dataset_indices": self.args.expected_dataset_indices or [],
+                "excluded_dataset_indices": self.args.excluded_dataset_indices,
+                "environment_spec_sha256": self.args.environment_spec_sha256,
+                "cohort_manifest_sha256": file_sha256(
+                    Path(self.args.trace_json).with_suffix(".manifest.json")
+                ) if Path(self.args.trace_json).with_suffix(".manifest.json").is_file() else None,
                 "gpu_ids": self.args.gpu_ids,
                 "gpu_count": len(self.args.gpu_ids),
                 "max_gpu_min": self.args.max_gpu_min,
@@ -285,16 +308,25 @@ class BudgetController:
             time.sleep(min(2.0, max(0.1, self.work_remaining_s)))
         raise TimeoutError(f"vLLM did not become ready before the work cutoff: {last_error}")
 
-    def run_stage(self, label: str, command: list[str], max_stage_s: float = 360.0) -> bool:
+    def run_stage(
+        self, label: str, command: list[str], max_stage_s: float | None = None
+    ) -> bool:
         remaining = self.work_remaining_s
         if remaining <= 0:
             self.stage_records.append({"label": label, "status": "SKIPPED_BUDGET", "time_utc": utc_now()})
             self.save_state()
             return False
-        timeout_s = min(max_stage_s, remaining)
+        timeout_s = remaining if max_stage_s is None else min(max_stage_s, remaining)
         log_path = self.log_dir / f"{label}.log"
         record: dict[str, Any] = {
             "label": label,
+            "experiment_id": self.args.experiment_id,
+            "run_id": f"{self.args.experiment_id}:{label}",
+            "parent_run_id": (
+                self.args.experiment_id
+                if label == "cohort-source-local"
+                else f"{self.args.experiment_id}:cohort-source-local"
+            ),
             "command": command,
             "started_at_utc": utc_now(),
             "timeout_s": round(timeout_s, 3),
@@ -380,6 +412,8 @@ class BudgetController:
             *WORKERS,
             "--model-name",
             MODEL_NAME,
+            "--dataset-id",
+            "gsm8k:test",
             "--tokenizer-dir",
             self.args.tokenizer_dir,
             "--dataset",
@@ -403,7 +437,6 @@ class BudgetController:
             "--request-timeout-s",
             "300",
             "--reset-prefix-cache",
-            "--omit-output-text",
         ]
         if self.args.fixed_output_tokens is not None:
             base_common.extend(["--fixed-output-tokens", str(self.args.fixed_output_tokens)])
@@ -413,9 +446,6 @@ class BudgetController:
             source_common = [
                 *base_common[: base_common.index("--trace-json")],
                 *base_common[base_common.index("--trace-json") + 2 :],
-            ]
-            source_common = [
-                argument for argument in source_common if argument != "--omit-output-text"
             ]
             source_command = [
                 "--strategy",
@@ -432,6 +462,12 @@ class BudgetController:
                 "1024",
                 "--run-label",
                 "cohort-source-local",
+                "--experiment-id",
+                self.args.experiment_id,
+                "--run-id",
+                f"{self.args.experiment_id}:cohort-source-local",
+                "--parent-run-id",
+                self.args.experiment_id,
             ]
             service_profile_index = source_command.index("--service-profile-json")
             source_command[service_profile_index + 1] = self.args.bootstrap_service_profile
@@ -471,6 +507,14 @@ class BudgetController:
                 "--max-tokens-leaf",
                 "1024",
                 "--strict-prompt-token-counts",
+                "--dataset-id",
+                "gsm8k:test",
+                "--cohort-id",
+                self.args.experiment_id,
+                "--source-run-id",
+                f"{self.args.experiment_id}:cohort-source-local",
+                "--manifest-output",
+                str(Path(self.args.trace_json).with_suffix(".manifest.json")),
                 "--expected-dataset-indices",
                 *[str(index) for index in self.args.expected_dataset_indices],
             )
@@ -519,6 +563,16 @@ class BudgetController:
                     str(profile_path),
                 ),
             )
+            if profile_path.is_file():
+                profile = json.loads(profile_path.read_text(encoding="utf-8"))
+                profile.update(
+                    {
+                        "experiment_id": self.args.experiment_id,
+                        "run_id": f"{self.args.experiment_id}:service-calibration",
+                        "parent_run_id": f"{self.args.experiment_id}:cohort-source-local",
+                    }
+                )
+                write_json(profile_path, profile)
         if not profile_path.is_file():
             self.state = "INCOMPLETE_SERVICE_CALIBRATION"
             self.save_state()
@@ -572,6 +626,12 @@ class BudgetController:
                         if self.args.fixed_output_tokens is not None
                         else label
                     ),
+                    "--experiment-id",
+                    self.args.experiment_id,
+                    "--run-id",
+                    f"{self.args.experiment_id}:{label}",
+                    "--parent-run-id",
+                    f"{self.args.experiment_id}:cohort-source-local",
                 ),
             )
             if not completed:
@@ -580,6 +640,21 @@ class BudgetController:
 
         self.state = "PRIMARY_COMPLETE"
         self.save_state()
+        if self.args.skip_references:
+            self.state = "PRIMARY_COMPLETE_REFERENCES_SKIPPED"
+            self.stage_records.extend(
+                {
+                    "label": label,
+                    "status": "SKIPPED_BY_FROZEN_PLAN",
+                    "experiment_id": self.args.experiment_id,
+                    "run_id": f"{self.args.experiment_id}:{label}",
+                    "parent_run_id": f"{self.args.experiment_id}:cohort-source-local",
+                    "time_utc": utc_now(),
+                }
+                for label, _ in OPTIONAL_RUNS
+            )
+            self.save_state()
+            return
         all_references_complete = True
         for label, strategy in OPTIONAL_RUNS:
             if self.work_remaining_s < self.args.optional_run_reserve_s:
@@ -670,6 +745,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tokenizer-dir", required=True)
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--trace-json", required=True)
+    parser.add_argument("--experiment-id", required=True)
+    parser.add_argument("--environment-spec-json", required=True)
     parser.add_argument("--questions", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20260930)
     parser.add_argument("--tree-ids", nargs="+", type=int, default=[1, 3, 5, 7])
@@ -691,6 +768,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prepare-independent-trace", action="store_true")
     parser.add_argument("--bootstrap-service-profile")
     parser.add_argument("--expected-dataset-indices", nargs="+", type=int)
+    parser.add_argument("--excluded-dataset-indices", nargs="+", type=int, default=[])
     parser.add_argument("--output-profile", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--budget-log", required=True)
@@ -700,6 +778,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prior-gpu-min", type=float, default=0.0)
     parser.add_argument("--cleanup-reserve-gpu-min", type=float, default=5.0)
     parser.add_argument("--optional-run-reserve-s", type=float, default=360.0)
+    parser.add_argument("--skip-references", action="store_true")
+    parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--fixed-output-tokens", type=int)
     args = parser.parse_args()
     if len(set(args.gpu_ids)) != 4 or any(gpu < 0 for gpu in args.gpu_ids):
@@ -733,6 +813,14 @@ def parse_args() -> argparse.Namespace:
             )
         if len(set(args.expected_dataset_indices)) != len(args.expected_dataset_indices):
             parser.error("--expected-dataset-indices must be unique")
+        if set(args.expected_dataset_indices) & set(args.excluded_dataset_indices):
+            parser.error("frozen cohort indices overlap the excluded prior cohort")
+        if len(set(args.excluded_dataset_indices)) != len(args.excluded_dataset_indices):
+            parser.error("--excluded-dataset-indices must be unique")
+        if not args.excluded_dataset_indices:
+            parser.error("--excluded-dataset-indices must list prior used samples")
+        if not args.skip_references:
+            parser.error("independent cohort plan requires --skip-references")
         if args.reuse_service_profile:
             parser.error("--reuse-service-profile cannot be used while preparing a new trace")
         if args.only_primary_run:
@@ -752,6 +840,7 @@ def parse_args() -> argparse.Namespace:
         "model_dir",
         "tokenizer_dir",
         "dataset",
+        "environment_spec_json",
         "output_profile",
     ):
         path = Path(getattr(args, path_arg))
@@ -759,6 +848,28 @@ def parse_args() -> argparse.Namespace:
             parser.error(f"{path_arg.replace('_', '-')} does not exist: {path}")
         if path_arg == "cuda_home" and not (path / "bin/nvcc").is_file():
             parser.error(f"CUDA toolkit has no bin/nvcc: {path}")
+    dataset_records = sum(
+        1 for line in Path(args.dataset).read_text(encoding="utf-8").splitlines() if line.strip()
+    )
+    if args.questions > dataset_records:
+        parser.error(f"requested {args.questions} questions; dataset has {dataset_records}")
+    if any(index < 0 or index >= dataset_records for index in args.excluded_dataset_indices):
+        parser.error("every excluded dataset index must exist in the selected dataset")
+    sampled_indices = sorted(random.Random(args.seed).sample(range(dataset_records), args.questions))
+    if args.prepare_independent_trace and sampled_indices != args.expected_dataset_indices:
+        parser.error(
+            "seeded sample does not match --expected-dataset-indices: "
+            f"expected={args.expected_dataset_indices}, sampled={sampled_indices}"
+        )
+    args.sampled_indices = sampled_indices
+    args.dataset_record_count = dataset_records
+    environment_spec = json.loads(
+        Path(args.environment_spec_json).read_text(encoding="utf-8")
+    )
+    canonical_spec = json.dumps(
+        environment_spec, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    args.environment_spec_sha256 = hashlib.sha256(canonical_spec).hexdigest()
     if not args.prepare_independent_trace and not Path(args.trace_json).exists():
         parser.error(f"trace-json does not exist: {args.trace_json}")
     if args.prepare_independent_trace:
@@ -772,6 +883,8 @@ def parse_args() -> argparse.Namespace:
         args.reuse_service_profile = str(profile.resolve())
     if args.skip_sanity and not args.reuse_service_profile:
         parser.error("--skip-sanity requires --reuse-service-profile")
+    if args.preflight_only and not args.prepare_independent_trace:
+        parser.error("--preflight-only requires --prepare-independent-trace")
     return args
 
 
@@ -803,9 +916,95 @@ def main() -> int:
     if args.bootstrap_service_profile:
         args.bootstrap_service_profile = str(Path(args.bootstrap_service_profile).resolve())
     output_dir = Path(args.output_dir)
-    if output_dir.exists() and any(output_dir.iterdir()):
-        raise SystemExit(f"Refusing to reuse a non-empty output directory: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
+    trace_path = Path(args.trace_json)
+    if args.prepare_independent_trace and trace_path.parent.resolve() != output_dir.resolve():
+        raise SystemExit("trace-json must be stored inside output-dir for the cohort manifest")
+    shapes = ("balanced", "broad", "chain", "skewed")
+    preflight = {
+        "format": "prismserve-direction1-cohort-manifest-v1",
+        "status": "SAMPLE_FROZEN_TRACE_PENDING",
+        "cohort_id": args.experiment_id,
+        "dataset_id": "gsm8k:test",
+        "dataset_sha256": file_sha256(Path(args.dataset)),
+        "dataset_record_count": args.dataset_record_count,
+        "seed": args.seed,
+        "question_count": args.questions,
+        "selected_dataset_indices": args.sampled_indices,
+        "excluded_dataset_indices": args.excluded_dataset_indices,
+        "tree_shapes": {
+            str(tree_id): shapes[tree_id % len(shapes)]
+            for tree_id in range(args.questions)
+        },
+        "model": MODEL_NAME,
+        "environment_spec_sha256": args.environment_spec_sha256,
+        "source_run_config": {
+            "strategy": "local-only",
+            "temperature": 0,
+            "max_tokens_inner": 1024,
+            "max_tokens_leaf": 1024,
+            "natural_eos": True,
+            "max_concurrency_per_worker": 4,
+            "router_capacity_per_worker": 2,
+            "request_timeout_s": 300,
+        },
+        "calibration_config": {
+            "max_tokens": 128,
+            "tree_ids": list(range(args.questions)),
+        },
+        "paired_run_config": {
+            "strategies": ["kv-cost-group-flat", "kv-cost-group-tree"],
+            "block_order": ["flat", "tree", "tree", "flat"],
+            "temperature": 0,
+            "max_tokens_inner": 1024,
+            "max_tokens_leaf": 1024,
+            "natural_eos": True,
+            "max_concurrency_per_worker": 4,
+            "router_capacity_per_worker": 2,
+            "request_timeout_s": 300,
+            "reset_prefix_cache_before_each_arm": True,
+        },
+        "gpu_ids": args.gpu_ids,
+        "max_gpu_min": args.max_gpu_min,
+        "prior_gpu_min": args.prior_gpu_min,
+        "cleanup_reserve_gpu_min": args.cleanup_reserve_gpu_min,
+        "planned_runs": [
+            f"{args.experiment_id}:cohort-source-local",
+            f"{args.experiment_id}:service-calibration",
+            *[f"{args.experiment_id}:{label}" for label, _ in PRIMARY_RUNS],
+        ],
+        "no_reference_runs": args.skip_references,
+        "output_length_profile_sha256": file_sha256(Path(args.output_profile)),
+        "bootstrap_service_profile_sha256": (
+            file_sha256(Path(args.bootstrap_service_profile))
+            if args.bootstrap_service_profile
+            else None
+        ),
+    }
+    canonical_preflight = json.dumps(
+        preflight, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    preflight["cohort_config_sha256"] = hashlib.sha256(canonical_preflight).hexdigest()
+    manifest_path = trace_path.with_suffix(".manifest.json")
+    existing_files = list(output_dir.iterdir())
+    if args.preflight_only:
+        if existing_files:
+            raise SystemExit(f"Refusing to overwrite a non-empty output directory: {output_dir}")
+        write_json(manifest_path, preflight)
+        print(json.dumps(preflight, indent=2, ensure_ascii=False))
+        return 0
+    if existing_files:
+        if (
+            len(existing_files) != 1
+            or existing_files[0].resolve() != manifest_path.resolve()
+            or not manifest_path.is_file()
+        ):
+            raise SystemExit(f"Refusing to reuse a non-empty output directory: {output_dir}")
+        existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if existing_manifest != preflight:
+            raise SystemExit("Preflight manifest differs from the requested run configuration")
+    else:
+        write_json(manifest_path, preflight)
     args.budget_log.parent.mkdir(parents=True, exist_ok=True)
     controller = BudgetController(args, Path(args.logs_dir))
     exit_code = 2
