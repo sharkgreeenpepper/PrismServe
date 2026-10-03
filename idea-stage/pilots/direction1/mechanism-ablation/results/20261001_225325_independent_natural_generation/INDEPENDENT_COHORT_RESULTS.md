@@ -1,15 +1,15 @@
 # Independent natural-generation cohort results
 
-Status: all four primary runs are complete. The two timed-out B2-flat attempts are excluded. The same-family result-to-claim review returned `claim_supported: no`; the frozen screen outcome is **inconclusive**. Review acceptance is provisional and experiment-integrity status is unavailable.
+Status: all four primary runs are complete. The two timed-out B2-flat attempts are excluded. The same-family result-to-claim review returned `claim_supported: no`; the frozen screen outcome is **inconclusive**. A same-family, provisional experiment-integrity audit returned **WARN**; see `../../EXPERIMENT_AUDIT.md`.
 
 ## Design and evidence integrity
 
 - Dataset: GSM8K test, seed `20261002`, selected indices `[289, 329, 758, 1108]`. These are disjoint from the eight questions used in the earlier direction-1 pilot.
 - Trees 0–3 are balanced, broad, chain, and skewed, with 7, 10, 6, and 9 nodes (32 requests per arm).
-- Each primary arm replayed the same frozen natural-history prompt trace. The trace has SHA-256 `51e7ea09d3d050c96718a1cef784f5c91500836de278e11b6fd7cdf003c5b483`; strict tokenizer prompt-count verification passed for all nodes.
+- Each primary arm replayed the same frozen natural-history prompt trace. The runtime trace SHA-256 recorded in the run summaries is `51e7ea09d3d050c96718a1cef784f5c91500836de278e11b6fd7cdf003c5b483`; the committed redacted `cohort_trace.json` has SHA-256 `3b4d99431e488e5b7a0328b5108e5c3238072221e7b09e893b085b51736b4dec`. Redacted path fields change the file bytes. This package does not include a reversible path-redaction manifest, so the runtime digest cannot be reproduced from the exported file alone. Strict tokenizer prompt-count verification passed for all nodes.
 - Inference used two vLLM replicas (tensor parallel size 2 each), temperature 0, natural EOS, and a 1,024-token request cap. There was no forced output length. Prefix caches were reset before every arm.
 - B1 ran flat then tree; B2 ran tree then flat. Each primary CSV contains 32 complete request rows, and queue, prefill, and decode metrics each have 32 observations per arm.
-- Each arm has the same 12,105 prompt tokens across its 32 requests. All request prompt counts match the frozen trace; all summaries report the same trace hash.
+- Each arm has the same 12,105 prompt tokens across its 32 requests. All request prompt counts match the frozen trace; all summaries report the same runtime trace hash.
 - The source pass used `local-only` only to generate natural parent outputs for the trace. It is not included in the comparisons.
 
 ## Primary results
@@ -60,14 +60,14 @@ The reviewer returned `claim_supported: no` for the intended ≥5% improvement c
 
 ## Interrupted runs and session caveat
 
-- The first B2-flat attempt in `runs_attempt2/` timed out at 30/32 requests, missing chain nodes 4 and 5. The retry in `runs_attempt3/` timed out at 31/32, missing chain node 5. Both partial attempts are excluded from every latency, queue, token, and correctness comparison.
-- The 31 completed requests in the second partial attempt already produced 13,002 completion tokens, versus 11,938 tokens in the included 32-request B2-flat run. This illustrates why partial rows cannot stand in for the completed arm.
+- The budget ledgers report that the first B2-flat attempt in `runs_attempt2/` timed out at 30/32 requests, missing chain nodes 4 and 5, and the retry in `runs_attempt3/` timed out at 31/32, missing chain node 5. Both partial attempts are excluded from every latency, queue, token, and correctness comparison. Their partial CSVs are absent from the retained result tree, so the row counts and missing-node identities cannot be independently recomputed from per-request records.
+- The budget ledger reports 13,002 completion tokens for the 31-request partial attempt, versus 11,938 tokens in the included 32-request B2-flat run. The partial token total cannot be independently recomputed without its CSV; it is ledger-reported evidence only.
 - B2-flat completed in `runs_attempt4/` after two timeout/restart cycles. The tree→flat order was retained, but this was not an uninterrupted temporal crossover: its server counters begin in a separate session from the first three primary arms. The completed arm therefore does not rule out server-session variation as an explanation.
-- An independent experiment-integrity audit was not available. The deterministic evidence precheck verified 14/14 cited values exist; that check does not validate their interpretation or establish run integrity.
+- The experiment-integrity audit returned **WARN**: supplied summary arithmetic reproduced, but the trace redaction/hash mapping and excluded partial-run CSVs are not retained in this package. The audit found no evidence of fabrication. The deterministic evidence precheck verified 14/14 cited values exist; that check does not validate their interpretation or establish run integrity.
 
 ## Execution accounting
 
 - Source generation, strict trace validation, and calibration completed. The source run is excluded from the outcome table.
-- Three primary conditions completed in the second run directory. Its B2-flat attempt timed out at 30/32 requests. A continuation attempt timed out at 31/32. Neither partial is used.
+- Three primary conditions completed in the second run directory. Its B2-flat timeout ledgers report 30/32 requests, and a continuation ledger reports 31/32; the associated partial CSVs are absent, so these row counts are not independently verifiable from raw requests. Neither partial is used.
 - The complete B2-flat result is in `runs_attempt4/`. The bounded controller finished with cumulative use of 79.508 GPU-min under the revised 87 GPU-min ceiling (7.492 GPU-min remained, including the 5 GPU-min cleanup reserve); optional local-only and least-loaded reference runs were skipped.
-- No experiment-integrity audit artifact was available. See the per-run summary JSON, request CSV, tree CSV, frozen trace, and budget logs alongside this report.
+- Experiment-integrity audit: **WARN**. See `../../EXPERIMENT_AUDIT.md`; the machine-readable report is `../../EXPERIMENT_AUDIT.json`. See the per-run summary JSON, request CSV, tree CSV, frozen trace, and budget logs alongside this report.
