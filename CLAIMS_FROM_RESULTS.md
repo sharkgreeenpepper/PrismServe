@@ -25,12 +25,12 @@ The real-runtime pilot used vLLM 0.30.0 with DeepSeek-R1-Distill-Llama-70B bf16 
 | kv-cost | 145.34 | 207.27 | +5.6% | 7/8 | 62.3% |
 | sibling-lookahead | 147.35 | 204.39 | +4.1% | 7/8 | 64.9% |
 
-All four policies recorded 7/8 majority exact-match accuracy. Least-loaded reduced the single-run observed maximum by about 4.50 seconds but increased p50 by 18.0%. Neither tree-aware policy beat local-only p95. The structural simulator also showed no stable p95 gain from its sibling-aware oracle heuristic over KV-cost routing; that is evidence about the simplified simulator, not an optimality bound or real-system result.
+All four policies recorded 7/8 majority exact-match accuracy. Least-loaded reduced the single-run observed maximum by about 4.50 seconds but increased the archived pilot's nearest-rank p50 by 18.0%. Neither tree-aware policy beat local-only p95. The structural simulator also showed no stable p95 gain from its sibling-aware oracle heuristic over KV-cost routing; that is evidence about the simplified simulator, not an optimality bound or real-system result.
 
 ## What the results support
 
 - In this single frozen-prompt replay, local-only had the lowest observed p50 and the highest prefix-cache token hit rate.
-- Least-loaded had a slightly lower observed maximum than local-only, alongside a materially slower median. With eight trees and no repeats, this is not stable tail-latency evidence.
+- Least-loaded had a slightly lower observed maximum than local-only, alongside a materially slower nearest-rank p50 estimate. This archived pilot's p50 convention differs from the conventional median used in later runs. With eight trees and no repeats, this is not stable tail-latency evidence.
 - The tested `kv-cost` and `sibling-lookahead` implementations did not demonstrate a p95 improvement over local-only.
 - Equal 7/8 aggregate accuracy is descriptive for this small sample; it does not establish answer-quality equivalence or non-inferiority.
 
@@ -62,7 +62,7 @@ All four policies recorded 7/8 majority exact-match accuracy. Least-loaded reduc
 
 ## Independent natural-generation cohort (2026-10-01)
 
-**Claim judgment:** `claim_supported: no`; frozen cohort screen: **inconclusive**. The same-family semantic review is provisional, and no experiment-integrity audit was available.
+**Claim judgment:** `claim_supported: no`; frozen cohort screen: **inconclusive**. The same-family semantic review is provisional. The experiment-integrity audit is same-family and provisional with **WARN** status; see `idea-stage/pilots/direction1/mechanism-ablation/EXPERIMENT_AUDIT.md`.
 
 The new four-question GSM8K cohort replayed 32 matched natural-history nodes per arm under the frozen queue-pressure gate. Tree-aware placement changed the median of four tree-completion latencies by +1.25% in B1 and −6.81% in B2 (positive values favor tree-aware placement). Thus neither the prespecified ≥5% speedup in both blocks nor consistent ≥5% slowdown in both blocks passed. The correct interpretation is an inconclusive pilot and an unsupported targeted improvement claim, not evidence of equivalence or a general scheduling effect.
 

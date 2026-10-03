@@ -1,0 +1,106 @@
+{
+  "audit_skill": "experiment-audit",
+  "verdict": "WARN",
+  "reason_code": "provenance_and_retained_output_gaps",
+  "summary": "Arithmetic supports the reported negative or inconclusive screens, but provenance documentation and missing partial outputs prevent a full integrity pass. No evidence establishes fabrication.",
+  "audited_input_hashes": {
+    "CLAIMS_FROM_RESULTS.md": "sha256:6bedf81bb84c97ace6a6d533f673f9156e7504eaf37dd43099572f6bfbccd946",
+    "idea-stage/pilots/direction1/run_vllm_placement_pilot.py": "sha256:4c3545719a51c601ed1751834ce41be2ebe8aed832ff126bbafb6011f475478b",
+    "idea-stage/pilots/direction1/build_prompt_trace.py": "sha256:5242d95c17303b691435932dd66cc04148c0f9f63a35498cd03c9febc598a5fd",
+    "idea-stage/pilots/direction1/mechanism-ablation/run_bounded_matrix.py": "sha256:5b8246685decc2ef7d2734fed903a78ef244593f6b6d6b0ce4a299d8ba28995a",
+    "idea-stage/pilots/direction1/mechanism-ablation/findings.md": "sha256:fe39986d419f89dda7448ad535a7a70b1c5eebdbd2994855ff846abcbc91439a",
+    "idea-stage/pilots/direction1/mechanism-ablation/MECHANISM_ABLATION_TRACKER.md": "sha256:7b9249c5759bdec2b9eab5b4fd353c69af3534bae60babd42874461c8f8b840a",
+    "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_225325_independent_natural_generation/INDEPENDENT_COHORT_RESULTS.md": "sha256:ca9c70b68996547fd015ad9fc5f7b7414420c665fe040cc91409d071e5882274",
+    "idea-stage/pilots/direction1/mechanism-ablation/results/20261001_225325_independent_natural_generation/cohort_trace.json": "sha256:3b4d99431e488e5b7a0328b5108e5c3238072221e7b09e893b085b51736b4dec"
+  },
+  "trace_path": ".aris/traces/experiment-audit/2026-10-03_run01/",
+  "agent_id": "/root/direction1_integrity_audit_light",
+  "verdict_id": "/root/direction1_integrity_audit_light",
+  "executor_model": "Codex",
+  "executor_family": "openai",
+  "reviewer_model": "gpt-6-astra",
+  "reviewer_family": "openai",
+  "reviewer_reasoning": "low",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "generated_at": "2026-10-03 13:37:14 UTC",
+  "date": "2026-10-03",
+  "auditor": "gpt-6-astra-low",
+  "overall_verdict": "warn",
+  "integrity_status": "warn",
+  "checks": {
+    "gt_provenance": {
+      "status": "warn",
+      "details": "Dataset answer targets and disjoint question indices are reported, but exported path placeholders and a trace digest mismatch lack a reversible redaction manifest."
+    },
+    "score_normalization": {
+      "status": "warn",
+      "details": "No improper self-normalization found and supplied calculations reproduce; archived nearest-rank p50 is mislabeled as a median in claim prose."
+    },
+    "result_existence": {
+      "status": "warn",
+      "details": "Main results and numerical screen claims reproduce. Trace-hash mapping is undocumented; one completed B2-flat run is incorrectly described as two."
+    },
+    "dead_code": {
+      "status": "pass",
+      "details": "No material dead evaluation metric or phantom output found."
+    },
+    "scope": {
+      "status": "warn",
+      "details": "Small pilot scope is disclosed, but generated text and partial-run CSVs are missing; detailed partial-run counts cannot be recomputed."
+    },
+    "eval_type": "mixed"
+  },
+  "evaluation_classifications": [
+    {
+      "artifact": "structural pilot",
+      "type": "simulation_only"
+    },
+    {
+      "artifact": "original and mechanism pilots",
+      "type": "real_serving_frozen_synthetic_workload"
+    },
+    {
+      "artifact": "fixed-output diagnostic",
+      "type": "real_serving_controlled_work_diagnostic"
+    },
+    {
+      "artifact": "independent cohort",
+      "type": "real_serving_frozen_natural_history_replay"
+    }
+  ],
+  "claims": [
+    {
+      "id": "intended_speedup",
+      "impact": "unsupported",
+      "detail": "The >=5% target improvement was not demonstrated."
+    },
+    {
+      "id": "original_mechanism_screen",
+      "impact": "supported_with_scope_qualification",
+      "detail": "No improvement was demonstrated in the tested pilot; do not generalize."
+    },
+    {
+      "id": "fixed_output_screen",
+      "impact": "inconclusive"
+    },
+    {
+      "id": "independent_cohort_screen",
+      "impact": "inconclusive"
+    },
+    {
+      "id": "recorded_correctness",
+      "impact": "descriptive_only",
+      "detail": "Generated text was not retained for independent correctness review."
+    }
+  ],
+  "action_items": [
+    "Add a trace export manifest with runtime and exported-file hashes and the redaction rule.",
+    "Recover the excluded partial CSVs or label their detailed counts as ledger-reported and not independently verified.",
+    "Retain generated outputs in future natural-generation runs.",
+    "Distinguish nearest-rank p50 from conventional median and correct the B2-flat completed-run count.",
+    "Freeze restart and censoring rules before future independent cohorts."
+  ],
+  "no_evidence_establishes_fabrication": true,
+  "audit_input_snapshot": "Hash values above were captured before the report corrections included with this audit."
+}
