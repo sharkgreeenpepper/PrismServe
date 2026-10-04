@@ -1,0 +1,104 @@
+{
+  "experiment_id": "direction1-lookahead-weight-screen-20261004",
+  "status": "STOPPED_AFTER_BLOCK_A_SCREEN",
+  "source_artifacts_root": "/home/bumi/infra/cache/prismserve-direction1-lookahead-weight-20261004",
+  "inputs": {
+    "trace": {
+      "path": "/home/bumi/infra/cache/prismserve-direction1-replication-20261004/attempt2/c4/cohort_trace.json",
+      "sha256": "4e6eff34c48d7d8d25761578aaa9f03618ce70a7c9fc7121a9edc99179eaf13d"
+    },
+    "dataset": {
+      "path": "/home/bumi/infra/assets/gsm8k/test.jsonl",
+      "sha256": "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14"
+    },
+    "trace_manifest": {
+      "path": "/home/bumi/infra/cache/prismserve-direction1-replication-20261004/attempt2/c4/cohort_trace.manifest.json",
+      "bytes": 3973,
+      "sha256": "db5f51ecb1fbf12f3e87d19ae5175200d57d038be25fdc334dd021444a6dfa68"
+    },
+    "service_rate_profile": {
+      "path": "/home/bumi/infra/cache/prismserve-direction1-request-telemetry-20261004/service_rate_profile.json",
+      "bytes": 116079,
+      "sha256": "3d1de518f88e94e56d2b10fa37b4a33575f6cfe403e218857a06e3a6ca096511"
+    },
+    "output_length_profile": {
+      "path": "idea-stage/pilots/direction1/mechanism-ablation/output_length_profile.json",
+      "bytes": 778,
+      "sha256": "88a4b5939e6c72b186686abfcbbafba2921c4832bcf7fc3f95d0f6f0d02623f3"
+    },
+    "tokenizer_tree_sha256": "aecb8e4ef39ac3287ad7ad4e7bd98e81e007272098ca28d56043c351659d835b",
+    "model_path": "/home/bumi/infra/models/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+    "model": "DeepSeek-R1-Distill-Llama-70B bf16",
+    "runtime": "vLLM 0.30.0; CUDA 12.9",
+    "gpu": "NVIDIA H20 indices 4-7 (two TP=2 replicas)"
+  },
+  "retained_git_artifacts": [
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/BUDGET_LOG.json",
+      "bytes": 11388,
+      "sha256": "da106b3ce63e6afde75b58366a5f341bdfbf08e1091b5a8ddec60119ce4ca93e"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/RUN_PLAN.json",
+      "bytes": 1600,
+      "sha256": "72709f4f1a43522c13734d76453af28c376af39a50d2057c88b8358ecb0bbaba"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-flat_blockA-flat_20261004_050734_REQUESTS.csv",
+      "bytes": 323045,
+      "sha256": "99490c9468f301e4b8afa30851aa16d48ca4a28cd38a02285a368749b73bd6de"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-flat_blockA-flat_20261004_050734_SUMMARY.json",
+      "bytes": 105440,
+      "sha256": "b84955b3bed6a46c6af71c87b6d85d230d0b7d7baeee732a5f06ab76950e21d9"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-flat_blockA-flat_20261004_050734_TREES.csv",
+      "bytes": 8938,
+      "sha256": "6b6fa63e776e55ea4a773bc8d67d262433b4b22de0a708747a8ffc56dcda8e91"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w0-5_20261004_051408_REQUESTS.csv",
+      "bytes": 325351,
+      "sha256": "b3d0da13f397cfa45af7b1275dc64a540b87d4143bfd2225ff1d924645f2a311"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w0-5_20261004_051408_SUMMARY.json",
+      "bytes": 105673,
+      "sha256": "86fb7e4149b715ca41c9ee0767bd71838ac463dd309c67f024423f4cac9e4a2f"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w0-5_20261004_051408_TREES.csv",
+      "bytes": 9019,
+      "sha256": "4971208146b7a605684a0fa23eba84b7877b8c59fa7ab8917ca0213cfa9c2b6a"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w1-0_20261004_050106_REQUESTS.csv",
+      "bytes": 323149,
+      "sha256": "aeecff579ddee1b706f4f4c409c32fc416e43adbd7132027aa8ca07cf0d3b907"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w1-0_20261004_050106_SUMMARY.json",
+      "bytes": 104679,
+      "sha256": "af888f5cbb079c8a6baf54dc362a9e67df048efede558a7fa3cfa8c70df85f41"
+    },
+    {
+      "path": "results/20261004_124417_weighted_lookahead_screen/attempt1/blockA/REAL_PLACEMENT_kv-cost-group-tree_blockA-tree-w1-0_20261004_050106_TREES.csv",
+      "bytes": 9022,
+      "sha256": "bc2d98e692a4ad775b2a6b3d148433f3e968711c628fc7f60d06334923a59136"
+    }
+  ],
+  "derived_git_artifacts": [
+    {
+      "path": "idea-stage/pilots/direction1/mechanism-ablation/WEIGHTED_LOOKAHEAD_PER_TREE_20261004.csv",
+      "bytes": 1780,
+      "sha256": "fb3c1866d2c817d424bfd9f6a7bdd61edd8354dab461b94df97ec8b4f2cc1989"
+    },
+    {
+      "path": "idea-stage/pilots/direction1/mechanism-ablation/results/20261004_124417_weighted_lookahead_screen/WEIGHTED_LOOKAHEAD_RESULTS.md",
+      "bytes": 4916,
+      "sha256": "93b11dd1ade25499948e5c152c841b8415281707186dcc6ddd4eb07d7c67e9ea"
+    }
+  ]
+}
