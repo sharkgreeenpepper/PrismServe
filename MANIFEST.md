@@ -225,3 +225,8 @@
 | 2026-10-04 23:31 | /analyze-results + /run-experiment | refine-logs/EXPERIMENT_TRACKER.md | implementation | Latest direction-1 tracker after terminal-budget screen |
 | 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/IDEA_REPORT_20261004_233149.md | idea-discovery | Update direction-1 pilot state and current evidence boundary |
 | 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/IDEA_REPORT.md | idea-discovery | Latest idea report after terminal-budget quality screen |
+
+| 2026-10-04 23:44 | /result-to-claim | CLAIMS_FROM_RESULTS_20261004_234225.md | results | Same-family provisional claim judgment for live-tree terminal-budget quality screen |
+| 2026-10-04 23:44 | /result-to-claim | CLAIMS_FROM_RESULTS.md | results | Latest claim judgment; performance claim unsupported and B2/B3 stopped |
+| 2026-10-04 23:44 | /result-to-claim | findings_20261004_234225.md | results | Postmortem and constraints following B1.6 accuracy-screen failure |
+| 2026-10-04 23:44 | /result-to-claim | findings.md | results | Latest research findings with terminal-budget screen verdict |
