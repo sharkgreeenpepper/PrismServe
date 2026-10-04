@@ -179,6 +179,12 @@ class BudgetController:
                 ) if Path(self.args.trace_json).with_suffix(".manifest.json").is_file() else None,
                 "gpu_ids": self.args.gpu_ids,
                 "gpu_count": len(self.args.gpu_ids),
+                "max_concurrency_per_worker": self.args.max_concurrency,
+                "primary_runs": self.args.primary_runs or (
+                    [self.args.only_primary_run]
+                    if self.args.only_primary_run
+                    else [label for label, _ in PRIMARY_RUNS]
+                ),
                 "max_gpu_min": self.args.max_gpu_min,
                 "prior_gpu_min": self.args.prior_gpu_min,
                 "cleanup_reserve_gpu_min": self.args.cleanup_reserve_gpu_min,
@@ -432,7 +438,7 @@ class BudgetController:
             "--seed",
             str(self.args.seed),
             "--max-concurrency",
-            "4",
+            str(self.args.max_concurrency),
             "--router-capacity",
             "2",
             "--service-profile-json",
@@ -610,11 +616,15 @@ class BudgetController:
                 return
 
         primary_common = [*base_common, "--tree-ids", *tree_id_args]
-        primary_runs = (
-            [run for run in PRIMARY_RUNS if run[0] == self.args.only_primary_run]
+        selected_primary_labels = (
+            [self.args.only_primary_run]
             if self.args.only_primary_run
-            else PRIMARY_RUNS
+            else self.args.primary_runs or [label for label, _ in PRIMARY_RUNS]
         )
+        primary_runs = [
+            next(run for run in PRIMARY_RUNS if run[0] == label)
+            for label in selected_primary_labels
+        ]
         for label, strategy in primary_runs:
             completed = self.run_stage(
                 label,
@@ -768,6 +778,18 @@ def parse_args() -> argparse.Namespace:
         help="Run only one frozen primary condition during a bounded continuation",
     )
     parser.add_argument(
+        "--primary-runs",
+        nargs="+",
+        choices=[label for label, _ in PRIMARY_RUNS],
+        help="Run this ordered subset of frozen primary conditions",
+    )
+    parser.add_argument(
+        "--max-concurrency",
+        type=int,
+        default=4,
+        help="Maximum in-flight client requests per worker (default: 4)",
+    )
+    parser.add_argument(
         "--skip-sanity",
         action="store_true",
         help="Skip the short sanity replay when continuing a previously verified cohort",
@@ -807,6 +829,12 @@ def parse_args() -> argparse.Namespace:
         parser.error("prior usage and cleanup reserve must leave positive work budget")
     if args.fixed_output_tokens is not None and args.fixed_output_tokens < 1:
         parser.error("--fixed-output-tokens must be positive")
+    if args.max_concurrency < 1:
+        parser.error("--max-concurrency must be positive")
+    if args.only_primary_run and args.primary_runs:
+        parser.error("use only one of --only-primary-run and --primary-runs")
+    if args.primary_runs and len(set(args.primary_runs)) != len(args.primary_runs):
+        parser.error("--primary-runs must not contain duplicate labels")
     if args.questions < 1:
         parser.error("--questions must be positive")
     if not args.tree_ids or len(set(args.tree_ids)) != len(args.tree_ids):
@@ -840,6 +868,8 @@ def parse_args() -> argparse.Namespace:
             parser.error("--reuse-service-profile cannot be used while preparing a new trace")
         if args.only_primary_run:
             parser.error("--only-primary-run cannot be used while preparing a new trace")
+        if args.primary_runs:
+            parser.error("--primary-runs cannot be used while preparing a new trace")
         if args.skip_sanity:
             parser.error("--skip-sanity cannot be used while preparing a new trace")
     elif args.calibration_tree_ids is not None and not args.calibration_tree_ids:
@@ -959,7 +989,7 @@ def main() -> int:
             "max_tokens_inner": 1024,
             "max_tokens_leaf": 1024,
             "natural_eos": True,
-            "max_concurrency_per_worker": 4,
+            "max_concurrency_per_worker": args.max_concurrency,
             "router_capacity_per_worker": 2,
             "request_timeout_s": 300,
         },
@@ -974,7 +1004,7 @@ def main() -> int:
             "max_tokens_inner": 1024,
             "max_tokens_leaf": 1024,
             "natural_eos": True,
-            "max_concurrency_per_worker": 4,
+            "max_concurrency_per_worker": args.max_concurrency,
             "router_capacity_per_worker": 2,
             "request_timeout_s": 300,
             "reset_prefix_cache_before_each_arm": True,
@@ -982,6 +1012,12 @@ def main() -> int:
         },
         "request_telemetry_enabled": args.enable_request_telemetry,
         "gpu_ids": args.gpu_ids,
+        "max_concurrency_per_worker": args.max_concurrency,
+        "primary_runs": args.primary_runs or (
+            [args.only_primary_run]
+            if args.only_primary_run
+            else [label for label, _ in PRIMARY_RUNS]
+        ),
         "max_gpu_min": args.max_gpu_min,
         "prior_gpu_min": args.prior_gpu_min,
         "cleanup_reserve_gpu_min": args.cleanup_reserve_gpu_min,
