@@ -1,0 +1,19 @@
+Reviewer: GPT-6-Astra, reasoning low; agent `/root/direction1_b1_integrity_audit_light`.
+Independence: same-family, provisional acceptance. Read-only.
+
+Overall verdict: WARN.
+
+A. Ground truth: PASS with caveat. The runner loads GSM8K answers only for offline scoring; only the question goes into the root prompt. Evaluation is a custom majority-of-terminal-JSON exact match, not the official GSM8K pipeline.
+
+B. Score normalization/calibration: PASS/WARN. Accuracy and latency are raw. Calibration RMSE is in-sample on 32 node observations from four capped trees; no held-out predictor-quality evidence exists.
+
+C. Results and claims: WARN. Event files and summaries reconcile, and request telemetry is present. However, `tree_completed` means queues drained, including budget-pruned trees. All 20 corrected calibration/test trees hit the 9-node cap. Each test arm had terminal answers on 3/8 questions and exact match on 1/8. The implemented B1 gate checks route change, execution completion, and telemetry, not answer quality, answer coverage, natural stopping, predictor accuracy, or causal latency.
+
+D. Metric code: PASS with coverage caveat. Reported metrics are called and saved. Ordering/failure audits cover fixtures but are not all asserted automatically in live runs.
+
+E. Scope: WARN. One model/split; four calibration and eight test questions; one run per arm; sequential questions; p95 is the maximum. Arm order and retained prefix cache are confounded. Scheduler CPU overhead and a preregistered SLO are absent.
+
+F. Evaluation classification: PASS with separation. Dataset-grounded custom exact match; measured vLLM request/latency/cache metrics; self-supervised proxy calibration; simulation-only fixtures. Queue/KV route costs are estimates, and same-snapshot route changes are counterfactual assignments, not counterfactual executions.
+
+Supported narrowly: unseen-work changed a same-state assignment on 8/8 observed questions.
+Unsupported: natural useful-tree completion, predictor accuracy, stable tail-latency benefit, causal latency advantage, or broad quality preservation.

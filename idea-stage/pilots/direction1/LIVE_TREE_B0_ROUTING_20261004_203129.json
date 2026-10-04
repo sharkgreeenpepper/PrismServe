@@ -1,0 +1,28 @@
+{
+  "status": "B0_ROUTING_FIXTURE_PASS",
+  "evidence_scope": "synthetic mechanism fixture only; no model or performance evidence",
+  "predicted_remaining_nodes": [
+    0,
+    10,
+    0
+  ],
+  "qkv_assignment": [
+    0,
+    0,
+    1
+  ],
+  "unseen_work_assignment": [
+    1,
+    0,
+    1
+  ],
+  "unseen_work_same_snapshot_qkv_counterfactual": [
+    0,
+    0,
+    1
+  ],
+  "projected_group_peak_s": {
+    "qkv": 12.804,
+    "unseen-work": 96.402
+  }
+}

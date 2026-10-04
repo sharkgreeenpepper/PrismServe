@@ -163,3 +163,50 @@
 | 2026-10-04 13:44 | /result-to-claim | CLAIMS_FROM_RESULTS.md | result-to-claim | 加入离线预测误差和 held-out 输出长度校准信号及范围限制 |
 | 2026-10-04 13:44 | /result-to-claim | idea-stage/pilots/direction1/mechanism-ablation/findings.md | result-to-claim | 更新筛选裁决、校准诊断和新实验前置条件 |
 | 2026-10-04 13:44 | /run-experiment | idea-stage/pilots/direction1/mechanism-ablation/WEIGHTED_LOOKAHEAD_PLAN.md | implementation | 汇总筛选阶段执行结果和早停结论 |
+| 2026-10-04 19:34 | /experiment-plan | refine-logs/EXPERIMENT_PLAN_20261004_193431.md | implementation | 查新后收窄的在线展开树跨副本实验计划与预算门控 |
+| 2026-10-04 19:34 | /experiment-plan | refine-logs/EXPERIMENT_PLAN.md | implementation | 在线展开推理树实验计划最新副本 |
+| 2026-10-04 19:34 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER_20261004_193431.md | implementation | 在线树实验执行状态与启动门 |
+| 2026-10-04 19:34 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER.md | implementation | 在线树实验 tracker 最新副本 |
+| 2026-10-04 19:44 | /experiment-plan | idea-stage/pilots/direction1/live_tree_contract.py | implementation | B0 parent-first live-tree fixture driver and restricted router API |
+| 2026-10-04 19:44 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_B0_CONTRACT_20261004_194422.md | implementation | B0 contract audit; fixture passed, vLLM adapter remains unimplemented |
+| 2026-10-04 19:44 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_B0_CONTRACT.md | implementation | Latest B0 contract audit |
+| 2026-10-04 19:44 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_B0_EVENTS_20261004_194422.jsonl | implementation | Machine-readable 0-GPU fixture event ledger |
+| 2026-10-04 19:44 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_B0_EVENTS.jsonl | implementation | Latest B0 fixture event ledger |
+| 2026-10-04 19:44 | /experiment-plan | refine-logs/EXPERIMENT_PLAN_20261004_194422.md | implementation | Updated live-tree experiment plan after B0 gate |
+| 2026-10-04 19:44 | /experiment-plan | refine-logs/EXPERIMENT_PLAN.md | implementation | Latest plan: B0 passed; vLLM live-tree adapter gated |
+| 2026-10-04 19:44 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER_20261004_194422.md | implementation | Updated tracker with R001/R002 results |
+| 2026-10-04 19:44 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER.md | implementation | Latest tracker with R001/R002 results |
+
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/live_tree_contract.py | implementation | Log same-snapshot counterfactual routing, distinct request failure/cancel/abort counts, and consistent terminal node counts |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/run_live_tree_smoke.py | implementation | Add disjoint held-out calibration enforcement, request telemetry, successful-tree latency accounting, and direct routing counterfactuals |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/calibrate_live_tree_work.py | implementation | Bind calibration scales to complete event indices, run config, dataset ID, and dataset hash |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/compare_live_tree_arms.py | implementation | Gate mechanism on same-snapshot assignment changes plus complete paired trees and metrics |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/audit_live_tree_routing.py | implementation | Zero-GPU deterministic routing fixture for QKV counterfactual vs predicted-work assignment |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_CONTRACT_20261004_203129.md | implementation | B0 contract, failure-path, routing audit, cohort freeze, and budget-gate record |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_CONTRACT.md | implementation | Latest B0 audit report |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_EVENTS_20261004_203129.jsonl | implementation | Timestamped successful zero-GPU online-tree fixture events |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_EVENTS.jsonl | implementation | Latest successful zero-GPU fixture event ledger |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_FAILURE_EVENTS_20261004_203129.jsonl | implementation | Timestamped request-failure, sibling-cancel, and tree-failed fixture events |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_FAILURE_EVENTS.jsonl | implementation | Latest failure-path fixture event ledger |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_ROUTING_20261004_203129.json | implementation | Timestamped synthetic same-snapshot routing assignment audit; no model/performance evidence |
+| 2026-10-04 20:31 | /experiment-bridge | idea-stage/pilots/direction1/LIVE_TREE_B0_ROUTING.json | implementation | Latest synthetic routing fixture result |
+| 2026-10-04 20:31 | /experiment-bridge | refine-logs/EXPERIMENT_PLAN_20261004_203129.md | implementation | B1 held-out cohort, direct mechanism gate, and reconciled budget update |
+| 2026-10-04 20:31 | /experiment-bridge | refine-logs/EXPERIMENT_PLAN.md | implementation | Latest online live-tree plan after B0 audit and cohort/budget freeze |
+| 2026-10-04 20:31 | /experiment-bridge | refine-logs/EXPERIMENT_TRACKER_20261004_203129.md | implementation | R003 frozen-ready state, disjoint indices, and remaining parent-budget record |
+| 2026-10-04 20:31 | /experiment-bridge | refine-logs/EXPERIMENT_TRACKER.md | implementation | Latest live-tree execution tracker before model-service launch |
+| 2026-10-04 21:28 | /experiment-audit | idea-stage/pilots/direction1/live-tree-b1/EXPERIMENT_AUDIT.md | results | Fresh same-family GPT-6-Astra light audit; B1 is mechanism-only evidence with WARN verdict |
+| 2026-10-04 21:28 | /experiment-audit | idea-stage/pilots/direction1/live-tree-b1/EXPERIMENT_AUDIT.json | results | Machine-readable audit verdict, claim scope, input hash, and trace pointer |
+| 2026-10-04 21:28 | /experiment-audit | .aris/traces/experiment-audit/2026-10-04_run01/prompt.txt | results | Reconstructed reviewer request for the read-only B1 integrity audit |
+| 2026-10-04 21:28 | /experiment-audit | .aris/traces/experiment-audit/2026-10-04_run01/review.txt | results | Structured capture of the reviewer findings and supported/unsupported claims |
+| 2026-10-04 21:28 | /run-experiment | idea-stage/pilots/direction1/live-tree-b1/B1_SCREEN_REPORT.md | results | B1 live-tree mechanism screen; reports tree cap, answer coverage, telemetry, and budget limits |
+| 2026-10-04 21:28 | /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_QUALITY_DIAGNOSTIC_20261004.md | results | Direct-answer JSON protocol diagnostic with corrected malformed-response count and cohort provenance |
+| 2026-10-04 21:28 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_QUALITY_VALIDATION_PLAN_20261004.md | implementation | Frozen same-cohort strict-schema direct/tree quality gate under a 100 GPU-min cap |
+| 2026-10-04 21:28 | /experiment-plan | refine-logs/EXPERIMENT_PLAN.md | implementation | B1 results, B1.5 screening gate, and corrected remaining-budget gates |
+| 2026-10-04 21:28 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER.md | implementation | B1 mechanism-pass/quality-hold status and frozen next-stage cohort |
+| 2026-10-04 21:28 | /experiment-bridge | idea-stage/pilots/direction1/live_tree_contract.py | implementation | Use strict JSON Schema for live-tree nodes and reject empty final answers |
+| 2026-10-04 21:28 | /experiment-bridge | idea-stage/pilots/direction1/run_live_tree_smoke.py | implementation | Bind tree prompt/config to strict schema and configured fanout |
+| 2026-10-04 21:41 | /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_QUALITY_VALIDATION_REPORT_20261004.md | results | Same-cohort direct/tree strict-schema check; protocol passes but answer coverage and exact-match gates fail |
+| 2026-10-04 21:41 | /experiment-plan | idea-stage/pilots/direction1/LIVE_TREE_QUALITY_VALIDATION_PLAN_20261004.md | results | Frozen B1.5 plan updated with completed outcome and stop-before-B2 decision |
+| 2026-10-04 21:41 | /experiment-plan | refine-logs/EXPERIMENT_PLAN.md | implementation | Record B1.5 failure, stop B2/B3, and reconcile 400 GPU-min parent ledger |
+| 2026-10-04 21:41 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER.md | implementation | Mark R003.1 stop-gate failure and R004/R005 not launched |
+| 2026-10-04 21:41 | /idea-discovery | idea-stage/IDEA_REPORT.md | idea-discovery | Update direction-1 assessment with online-tree quality result and stop decision |
