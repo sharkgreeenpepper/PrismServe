@@ -336,7 +336,10 @@ class BudgetController:
             "parent_run_id": (
                 self.args.experiment_id
                 if label == "cohort-source-local"
-                else f"{self.args.experiment_id}:cohort-source-local"
+                else (
+                    self.args.parent_run_id
+                    or f"{self.args.experiment_id}:cohort-source-local"
+                )
             ),
             "command": command,
             "started_at_utc": utc_now(),
@@ -648,7 +651,8 @@ class BudgetController:
                     "--run-id",
                     f"{self.args.experiment_id}:{label}",
                     "--parent-run-id",
-                    f"{self.args.experiment_id}:cohort-source-local",
+                    self.args.parent_run_id
+                    or f"{self.args.experiment_id}:cohort-source-local",
                 ),
             )
             if not completed:
@@ -773,6 +777,10 @@ def parse_args() -> argparse.Namespace:
         help="Reuse a calibrated service profile when continuing the same cohort",
     )
     parser.add_argument(
+        "--reuse-cohort-manifest",
+        help="Reuse a frozen trace's manifest as the integrity parent for a new run ID",
+    )
+    parser.add_argument(
         "--only-primary-run",
         choices=[label for label, _ in PRIMARY_RUNS],
         help="Run only one frozen primary condition during a bounded continuation",
@@ -866,6 +874,8 @@ def parse_args() -> argparse.Namespace:
             parser.error("independent cohort plan requires --skip-references")
         if args.reuse_service_profile:
             parser.error("--reuse-service-profile cannot be used while preparing a new trace")
+        if args.reuse_cohort_manifest:
+            parser.error("--reuse-cohort-manifest cannot be used while preparing a new trace")
         if args.only_primary_run:
             parser.error("--only-primary-run cannot be used while preparing a new trace")
         if args.primary_runs:
@@ -917,6 +927,32 @@ def parse_args() -> argparse.Namespace:
     args.environment_spec_sha256 = hashlib.sha256(canonical_spec).hexdigest()
     if not args.prepare_independent_trace and not Path(args.trace_json).exists():
         parser.error(f"trace-json does not exist: {args.trace_json}")
+    if args.reuse_cohort_manifest:
+        parent_manifest_path = Path(args.reuse_cohort_manifest)
+        if not parent_manifest_path.is_file():
+            parser.error(f"reuse-cohort-manifest does not exist: {parent_manifest_path}")
+        args.reuse_cohort_manifest = str(parent_manifest_path.resolve())
+        args.reuse_cohort_manifest_data = json.loads(
+            parent_manifest_path.read_text(encoding="utf-8")
+        )
+        parent_manifest = args.reuse_cohort_manifest_data
+        if parent_manifest.get("status") != "TRACE_FROZEN":
+            parser.error("--reuse-cohort-manifest must point to a TRACE_FROZEN manifest")
+        if parent_manifest.get("trace_file_sha256") != file_sha256(Path(args.trace_json)):
+            parser.error("reuse manifest trace hash does not match --trace-json")
+        if parent_manifest.get("dataset_sha256") != file_sha256(Path(args.dataset)):
+            parser.error("reuse manifest dataset hash does not match --dataset")
+        if parent_manifest.get("dataset_id") != "gsm8k:test":
+            parser.error("reuse manifest dataset_id must be gsm8k:test")
+        if parent_manifest.get("selected_dataset_indices") != sampled_indices:
+            parser.error("reuse manifest selected indices do not match --seed/--questions")
+        if parent_manifest.get("question_count") != args.questions:
+            parser.error("reuse manifest question_count does not match --questions")
+        args.parent_run_id = parent_manifest.get("source_run_id")
+        if not args.parent_run_id:
+            parser.error("reuse manifest does not name its frozen source_run_id")
+    else:
+        args.parent_run_id = None
     if args.prepare_independent_trace:
         bootstrap = Path(args.bootstrap_service_profile)
         if not bootstrap.is_file():
@@ -966,6 +1002,13 @@ def main() -> int:
     if args.prepare_independent_trace and trace_path.parent.resolve() != output_dir.resolve():
         raise SystemExit("trace-json must be stored inside output-dir for the cohort manifest")
     shapes = ("balanced", "broad", "chain", "skewed")
+    selected_primary_labels = (
+        args.primary_runs
+        if args.primary_runs
+        else [args.only_primary_run]
+        if args.only_primary_run
+        else [label for label, _ in PRIMARY_RUNS]
+    )
     preflight = {
         "format": "prismserve-direction1-cohort-manifest-v1",
         "status": "SAMPLE_FROZEN_TRACE_PENDING",
@@ -1013,11 +1056,7 @@ def main() -> int:
         "request_telemetry_enabled": args.enable_request_telemetry,
         "gpu_ids": args.gpu_ids,
         "max_concurrency_per_worker": args.max_concurrency,
-        "primary_runs": args.primary_runs or (
-            [args.only_primary_run]
-            if args.only_primary_run
-            else [label for label, _ in PRIMARY_RUNS]
-        ),
+        "primary_runs": selected_primary_labels,
         "max_gpu_min": args.max_gpu_min,
         "prior_gpu_min": args.prior_gpu_min,
         "cleanup_reserve_gpu_min": args.cleanup_reserve_gpu_min,
@@ -1034,6 +1073,79 @@ def main() -> int:
             else None
         ),
     }
+    if args.reuse_cohort_manifest:
+        parent_manifest = args.reuse_cohort_manifest_data
+        parent_paired_config = dict(parent_manifest.get("paired_run_config", {}))
+        selected_strategies = [
+            next(strategy for label, strategy in PRIMARY_RUNS if label == selected_label)
+            for selected_label in selected_primary_labels
+        ]
+        parent_paired_config.update(
+            {
+                "strategies": list(dict.fromkeys(selected_strategies)),
+                "block_order": [
+                    "flat" if label.endswith("-flat") else "tree"
+                    for label in selected_primary_labels
+                ],
+                "primary_runs": selected_primary_labels,
+                "max_concurrency_per_worker": args.max_concurrency,
+                "router_capacity_per_worker": 2,
+                "require_vllm_request_metrics": args.enable_request_telemetry,
+            }
+        )
+        preflight.update(
+            {
+                "status": "TRACE_FROZEN",
+                "parent_cohort_id": parent_manifest.get("cohort_id"),
+                "parent_cohort_manifest_sha256": file_sha256(
+                    Path(args.reuse_cohort_manifest)
+                ),
+                "excluded_dataset_indices": parent_manifest.get(
+                    "excluded_dataset_indices", []
+                ),
+                "source_run_config": parent_manifest.get(
+                    "source_run_config", preflight["source_run_config"]
+                ),
+                "calibration_config": parent_manifest.get(
+                    "calibration_config", preflight["calibration_config"]
+                ),
+                "paired_run_config": parent_paired_config,
+                "source_run_id": parent_manifest.get("source_run_id"),
+                "source_requests_sha256": parent_manifest.get("source_requests_sha256"),
+                "tokenizer_sha256": parent_manifest.get("tokenizer_sha256"),
+                "trace_file_sha256": parent_manifest.get("trace_file_sha256"),
+                "trace_canonical_sha256": parent_manifest.get("trace_canonical_sha256"),
+                "trace_config_sha256": parent_manifest.get("trace_config_sha256"),
+                "bootstrap_service_profile_sha256": parent_manifest.get(
+                    "bootstrap_service_profile_sha256"
+                ),
+                "prompt_token_count_mismatches": parent_manifest.get(
+                    "prompt_token_count_mismatches", []
+                ),
+                "run_mode": "reuse_frozen_trace",
+            }
+        )
+        if args.reuse_service_profile:
+            preflight["reused_service_profile_sha256"] = file_sha256(
+                Path(args.reuse_service_profile)
+            )
+        planned_runs = []
+        if args.prepare_independent_trace:
+            planned_runs.append(f"{args.experiment_id}:cohort-source-local")
+        if not args.reuse_service_profile:
+            planned_runs.append(f"{args.experiment_id}:service-calibration")
+        if not args.skip_sanity and not args.prepare_independent_trace:
+            planned_runs.append(f"{args.experiment_id}:sanity-tree{args.tree_ids[0]}")
+        planned_runs.extend(
+            f"{args.experiment_id}:{label}" for label in selected_primary_labels
+        )
+        if not args.skip_references:
+            planned_runs.extend(
+                f"{args.experiment_id}:{label}" for label, _ in OPTIONAL_RUNS
+            )
+        preflight["planned_runs"] = planned_runs
+    else:
+        preflight["primary_runs"] = selected_primary_labels
     canonical_preflight = json.dumps(
         preflight, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
