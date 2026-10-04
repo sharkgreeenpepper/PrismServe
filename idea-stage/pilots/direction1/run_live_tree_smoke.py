@@ -31,10 +31,14 @@ from live_tree_contract import (
 
 
 SYSTEM_PROMPT = """You are solving a math problem by exploring a small reasoning tree.
-Return exactly one JSON object and no Markdown. If the current path has a
-complete answer, return {\"status\":\"final\",\"answer\":\"number\",\"children\":[]}.
+Return exactly one JSON object and no Markdown. The current user message declares
+MODE=SEARCH or MODE=FINALIZE. Every final answer must be a numeric string only.
+In SEARCH mode, if the complete original problem is
+solved, return a final object such as {\"status\":\"final\",\"answer\":\"42\",\"children\":[]}.
 Otherwise return {\"status\":\"expand\",\"answer\":\"\",\"children\":[...]}
-with at most the configured fanout. Every child object must contain a distinct short
+with at most the configured fanout. In FINALIZE mode, solve the complete original
+problem now and return the numeric answer only with no children. Do not expand.
+Every child object must contain a distinct short
 \"action\", \"predicted_remaining_nodes\" (expected number of future nodes
 beyond that child's first request), and \"predicted_remaining_tokens\"
 (expected generated tokens in those future descendants). These are estimates,
@@ -77,7 +81,16 @@ def parse_final_answer(completion_text: str) -> str | None:
         return None
     if isinstance(payload, dict) and payload.get("status") == "final":
         value = payload.get("answer")
-        return normalize_answer(str(value)) if value is not None else None
+        if value is None:
+            return None
+        raw_answer = str(value).strip().replace(",", "").replace("$", "")
+        try:
+            numeric_answer = float(raw_answer)
+        except ValueError:
+            return None
+        if not math.isfinite(numeric_answer):
+            return None
+        return normalize_answer(raw_answer)
     return None
 
 
@@ -312,11 +325,12 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
         "dataset_indices": indices,
         "endpoint_hosts": endpoint_hosts,
         "model_name": args.model_name,
-        "system_prompt_version": "live-tree-json-schema-estimates-v2",
+        "system_prompt_version": "live-tree-terminal-budget-v3",
         "response_format": "json_schema_strict",
         "max_nodes": args.max_nodes,
         "max_depth": args.max_depth,
         "max_fanout": args.max_fanout,
+        "terminal_reserve_nodes": args.terminal_reserve_nodes,
         "max_inflight": args.max_inflight,
         "max_tokens": args.max_tokens,
         "max_predicted_nodes": args.max_nodes,
@@ -381,6 +395,7 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
                 max_inflight=args.max_inflight,
                 max_nodes=args.max_nodes,
                 max_depth=args.max_depth,
+                terminal_reserve_nodes=args.terminal_reserve_nodes,
             )
             root_prompt = (
                 f"Question: {row['question']}\n\n"
@@ -439,6 +454,19 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
             completion_events = [
                 event for event in events if event["event_type"] == "node_completed"
             ]
+            forced_final_count = sum(
+                bool(event.get("force_final")) for event in completion_events
+            )
+            force_final_by_node = {
+                int(event["node_id"]): bool(event.get("force_final"))
+                for event in completion_events
+            }
+            natural_terminal_count = sum(
+                event.get("stop_reason") == "model_terminal"
+                and not force_final_by_node.get(int(event["node_id"]), False)
+                for event in events
+                if event["event_type"] == "expansion_decision"
+            )
             missing_metrics = sorted(
                 {
                     field
@@ -463,6 +491,9 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
                 "cancelled_node_count": cancelled_nodes,
                 "aborted_before_dispatch_node_count": aborted_nodes,
                 "terminal_answer_count": len(answers),
+                "forced_final_node_count": forced_final_count,
+                "natural_model_terminal_branch_count": natural_terminal_count,
+                "hit_node_cap": released_nodes >= args.max_nodes,
                 "predicted_answer": majority,
                 "expected_answer": expected_answer(row["answer"]),
                 "exact_match": exact_match,
@@ -497,6 +528,12 @@ async def run(args: argparse.Namespace) -> dict[str, object]:
         "completed_tree_count": len(all_latencies),
         "failed_tree_count": sum(row["tree_status"] == "failed" for row in summaries),
         "exact_match_count": sum(bool(row["exact_match"]) for row in summaries),
+        "answer_coverage_count": sum(int(row["terminal_answer_count"]) > 0 for row in summaries),
+        "forced_final_node_count": sum(int(row["forced_final_node_count"]) for row in summaries),
+        "natural_model_terminal_branch_count": sum(
+            int(row["natural_model_terminal_branch_count"]) for row in summaries
+        ),
+        "trees_at_node_cap": sum(bool(row["hit_node_cap"]) for row in summaries),
         "released_node_count": sum(int(row["released_node_count"]) for row in summaries),
         "completed_node_count": sum(int(row["completed_node_count"]) for row in summaries),
         "failed_node_count": sum(int(row["failed_node_count"]) for row in summaries),
@@ -526,6 +563,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-nodes", type=int, default=9)
     parser.add_argument("--max-depth", type=int, default=3)
     parser.add_argument("--max-fanout", type=int, default=3)
+    parser.add_argument("--terminal-reserve-nodes", type=int, default=2)
     parser.add_argument("--max-inflight", type=int, default=4)
     parser.add_argument("--max-tokens", type=int, default=256)
     parser.add_argument("--prefill-tps", required=True)
