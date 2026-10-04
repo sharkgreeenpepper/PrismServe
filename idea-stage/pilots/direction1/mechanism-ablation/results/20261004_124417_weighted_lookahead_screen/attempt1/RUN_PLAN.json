@@ -1,0 +1,71 @@
+{
+  "experiment_id": "direction1-lookahead-weight-screen-20261004",
+  "parent_cohort_id": "direction1-gsm8k-repeat3-c4-20261004-seed20261004",
+  "parent_trace_sha256": "4e6eff34c48d7d8d25761578aaa9f03618ce70a7c9fc7121a9edc99179eaf13d",
+  "parent_manifest_sha256": "db5f51ecb1fbf12f3e87d19ae5175200d57d038be25fdc334dd021444a6dfa68",
+  "environment_spec_sha256": "2b1cf04c53a841305bda3c8841cbe0841c778bf81d3ba49096f5cf12e7667bfc",
+  "model": "deepseek-r1-distill-llama-70b",
+  "gpu_ids": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "max_gpu_min": 200.0,
+  "cleanup_reserve_gpu_min": 20.0,
+  "tree_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "concurrency_per_worker": 4,
+  "router_capacity_per_worker": 2,
+  "conditions_in_order": [
+    {
+      "block": "A",
+      "policy": "tree",
+      "tree_work_weight": 1.0
+    },
+    {
+      "block": "A",
+      "policy": "flat",
+      "tree_work_weight": 0.0
+    },
+    {
+      "block": "A",
+      "policy": "tree",
+      "tree_work_weight": 0.5
+    },
+    {
+      "block": "B",
+      "policy": "tree",
+      "tree_work_weight": 0.5
+    },
+    {
+      "block": "B",
+      "policy": "flat",
+      "tree_work_weight": 0.0
+    },
+    {
+      "block": "B",
+      "policy": "tree",
+      "tree_work_weight": 1.0
+    }
+  ],
+  "success_screen": "weight 0.5 at least 5% faster than flat in both blocks, complete telemetry, and no lower majority-correct count",
+  "early_stop": "skip block B if block A does not meet the 5% latency and correctness screen",
+  "expected_run_seconds": 400.0
+}
