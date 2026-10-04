@@ -230,3 +230,6 @@
 | 2026-10-04 23:44 | /result-to-claim | CLAIMS_FROM_RESULTS.md | results | Latest claim judgment; performance claim unsupported and B2/B3 stopped |
 | 2026-10-04 23:44 | /result-to-claim | findings_20261004_234225.md | results | Postmortem and constraints following B1.6 accuracy-screen failure |
 | 2026-10-04 23:44 | /result-to-claim | findings.md | results | Latest research findings with terminal-budget screen verdict |
+
+| 2026-10-04 23:53 | /analyze-results | idea-stage/pilots/direction1/ANSWER_SELECTION_RETROSPECTIVE_DIAGNOSTIC_20261004.md | results | Post-hoc same-cohort answer-selector sensitivity; no alternative passed quality |
+| 2026-10-04 23:53 | /analyze-results | refine-logs/EXPERIMENT_TRACKER.md | results | Record selector sensitivity and retain the B2 stop gate |
