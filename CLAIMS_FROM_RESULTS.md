@@ -69,3 +69,15 @@ The new four-question GSM8K cohort replayed 32 matched natural-history nodes per
 All arms recorded 4/4 majority-exact trees and 15/15 parsed exact-match leaves; these four questions do not establish correctness non-inferiority. Completion-token totals differed across arms, and full generated outputs were not saved. The completed B2-flat run followed two excluded timeouts and ran in a separate server session; its tree→flat order does not make it an uninterrupted crossover. The deterministic evidence precheck found 14/14 cited values, which establishes evidence presence only.
 
 See `idea-stage/pilots/direction1/mechanism-ablation/results/20261001_225325_independent_natural_generation/INDEPENDENT_COHORT_RESULTS.md` and the local provisional review trace under `.aris/traces/result-to-claim/2026-10-01_run03/`.
+
+## B2-routing replication at concurrency 4 and 8 (2026-10-04)
+
+**Verdict:** `claim_supported: no` for a stable latency advantage from the tested tree-aware B2 routing over flat queue/KV routing. A same-family GPT-6-Astra review at the user's requested light reasoning level returned `no` with high confidence that the current evidence does not support the claim; acceptance is provisional.
+
+Two runs per cell were completed over the same frozen 16-question GSM8K cohort. The paired median speedup of B2-tree versus B2-flat was +0.10% and +1.78% at concurrency 4, then −0.78% and +0.63% at concurrency 8 (positive favors tree-aware). This effect changes across repetitions and load settings. Run-level p95 maxima were numerically lower under B2-tree in all four comparisons, but each is only the maximum of 16 observations. All eight runs had 16/16 majority-correct trees, which does not establish quality non-inferiority.
+
+Concurrency 8 reduced client semaphore wait and increased engine queue wait without materially changing decode time. This suggests waiting moved inside vLLM but does not show a throughput gain. A factual event replay fit at 1–10 ms grouping windows, while B2-flat replay error increased at 20 ms (p50 error 8.75 s; maximum tree error 18.01 s); this validates only the tested factual replay settings, not counterfactual routing.
+
+**Decision:** Stop expanding the current heuristic unchanged. First use existing records to diagnose placement choices, generated-token differences, and client/engine admission accounting. Only resume with a specific revised mechanism, a preregistered practical effect/stopping rule, and independent cohorts with counterbalanced runs. The deterministic evidence precheck found 61/61 cited values, but no independent integrity audit was available. GPU use reached 476.487/500 GPU-min; 23.513 GPU-min remain including the 20 GPU-min cleanup reserve.
+
+See `idea-stage/pilots/direction1/B2_ROUTING_REPLICATION_20261004.md` and the raw artifacts under `/home/bumi/infra/cache/prismserve-direction1-replication-20261004/attempt2/`. The full reviewer trace is local at `.aris/traces/result-to-claim/2026-10-04_run01/` and excluded from Git.
