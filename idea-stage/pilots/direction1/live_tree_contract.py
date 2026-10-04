@@ -28,6 +28,7 @@ class ReleasedNode:
     action: str = "root"
     predicted_remaining_nodes: float = 0.0
     predicted_remaining_tokens: float = 0.0
+    force_final: bool = False
 
 
 @dataclass(frozen=True)
@@ -78,7 +79,9 @@ class ChildProposal:
 
 
 class ModelAdapter(Protocol):
-    async def generate(self, worker: int, prompt: str) -> GenerationResult: ...
+    async def generate(
+        self, worker: int, prompt: str, *, force_final: bool = False
+    ) -> GenerationResult: ...
 
 
 class ExpansionPolicy(Protocol):
@@ -120,8 +123,16 @@ class LiveTreeDriver:
         max_inflight: int,
         max_nodes: int,
         max_depth: int = 32,
+        terminal_reserve_nodes: int = 0,
     ) -> None:
-        if worker_count < 1 or max_inflight < 1 or max_nodes < 1 or max_depth < 1:
+        if (
+            worker_count < 1
+            or max_inflight < 1
+            or max_nodes < 1
+            or max_depth < 1
+            or terminal_reserve_nodes < 0
+            or terminal_reserve_nodes >= max_nodes
+        ):
             raise ValueError("worker_count, max_inflight, max_nodes, and max_depth must be positive")
         self.tree_id = tree_id
         self.adapter = adapter
@@ -131,12 +142,19 @@ class LiveTreeDriver:
         self.max_inflight = max_inflight
         self.max_nodes = max_nodes
         self.max_depth = max_depth
+        self.terminal_reserve_nodes = terminal_reserve_nodes
         self.log = EventLog(tree_id)
 
     async def run(self, root_prompt: str) -> list[dict[str, object]]:
         root = ReleasedNode(self.tree_id, 0, None, 0, root_prompt, "root")
         self.log.emit(
-            "node_released", node_id=0, parent_id=None, depth=0, action="root", reason="root"
+            "node_released",
+            node_id=0,
+            parent_id=None,
+            depth=0,
+            action="root",
+            reason="root",
+            force_final=False,
         )
         ready = [root]
         replica_inflight = [0] * self.worker_count
@@ -186,9 +204,23 @@ class LiveTreeDriver:
                         estimated_prompt_tokens=decision.estimated_prompt_tokens,
                         group_size=decision.group_size,
                         projected_group_peak_s=decision.projected_group_peak_s,
+                        force_final=node.force_final,
                     )
                     replica_inflight[worker] += 1
-                    task = asyncio.create_task(self.adapter.generate(worker, node.prompt))
+                    mode_directive = (
+                        "\n\nMODE=FINALIZE. Solve the original problem using the full visible "
+                        "context. Return a nonempty final answer and no children. Do not continue search."
+                        if node.force_final
+                        else "\n\nMODE=SEARCH. Return a final answer if the complete problem is solved; "
+                        "otherwise propose only useful next reasoning actions."
+                    )
+                    task = asyncio.create_task(
+                        self.adapter.generate(
+                            worker,
+                            node.prompt + mode_directive,
+                            force_final=node.force_final,
+                        )
+                    )
                     pending[task] = (node, worker)
 
             done, _ = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
@@ -233,6 +265,7 @@ class LiveTreeDriver:
                     completion_text=result.content,
                     prompt_tokens=result.prompt_tokens,
                     completion_tokens=result.completion_tokens,
+                    force_final=node.force_final,
                     request_id=result.request_id,
                     queue_time_ms=result.queue_time_ms,
                     time_to_first_token_ms=result.time_to_first_token_ms,
@@ -282,6 +315,10 @@ class LiveTreeDriver:
                             reason="max_nodes",
                         )
                         continue
+                    child_force_final = (
+                        node.depth + 1 >= self.max_depth
+                        or next_node_id >= self.max_nodes - self.terminal_reserve_nodes
+                    )
                     child = ReleasedNode(
                         tree_id=self.tree_id,
                         node_id=next_node_id,
@@ -292,8 +329,13 @@ class LiveTreeDriver:
                             f"\n\nContinue using proposal: {child_label}"
                         ),
                         action=child_label,
-                        predicted_remaining_nodes=proposal.predicted_remaining_nodes,
-                        predicted_remaining_tokens=proposal.predicted_remaining_tokens,
+                        predicted_remaining_nodes=(
+                            0.0 if child_force_final else proposal.predicted_remaining_nodes
+                        ),
+                        predicted_remaining_tokens=(
+                            0.0 if child_force_final else proposal.predicted_remaining_tokens
+                        ),
+                        force_final=child_force_final,
                     )
                     next_node_id += 1
                     self.log.emit(
@@ -303,6 +345,7 @@ class LiveTreeDriver:
                         depth=child.depth,
                         action=child.action,
                         reason="parent_completed",
+                        force_final=child.force_final,
                     )
                     ready.append(child)
 
@@ -339,6 +382,7 @@ class LiveTreeDriver:
                             completion_text=result.content,
                             prompt_tokens=result.prompt_tokens,
                             completion_tokens=result.completion_tokens,
+                            force_final=node.force_final,
                             request_id=result.request_id,
                             queue_time_ms=result.queue_time_ms,
                             time_to_first_token_ms=result.time_to_first_token_ms,
@@ -405,9 +449,14 @@ class LiveTreeDriver:
 class FixtureAdapter:
     """Deterministic stand-in for the model; never supplies topology up front."""
 
-    async def generate(self, worker: int, prompt: str) -> GenerationResult:
+    async def generate(
+        self, worker: int, prompt: str, *, force_final: bool = False
+    ) -> GenerationResult:
         del worker
         await asyncio.sleep(0)
+        if force_final:
+            payload = {"status": "final", "answer": "42", "children": []}
+            return GenerationResult(json.dumps(payload), prompt_tokens=20, completion_tokens=8)
         if "Continue using proposal: left-deep" in prompt:
             payload = {
                 "status": "expand",
@@ -457,8 +506,12 @@ class FixtureExpansionPolicy:
 
 
 class FailureFixtureAdapter:
-    async def generate(self, worker: int, prompt: str) -> GenerationResult:
+    async def generate(
+        self, worker: int, prompt: str, *, force_final: bool = False
+    ) -> GenerationResult:
         del worker
+        if force_final:
+            return GenerationResult('{"status":"final","answer":"0","children":[]}')
         if "Continue using proposal: failing" in prompt:
             raise RuntimeError("fixture request failure")
         if "Continue using proposal: sibling" in prompt:
@@ -498,7 +551,6 @@ class JsonExpansionPolicy:
         self.max_predicted_tokens = max_predicted_tokens
 
     def expand(self, node: ReleasedNode, completion: GenerationResult) -> Expansion:
-        del node
         raw = completion.content.strip()
         if raw.startswith("```"):
             raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
@@ -514,6 +566,8 @@ class JsonExpansionPolicy:
             if not isinstance(answer, str) or not answer.strip():
                 return Expansion((), "invalid_final_answer")
             return Expansion((), "model_terminal")
+        if node.force_final:
+            return Expansion((), "finalization_required")
         if status != "expand":
             return Expansion((), "invalid_status")
         values = payload.get("children")
@@ -568,7 +622,7 @@ class OpenAICompatibleVllmAdapter:
         self.max_fanout = max_fanout
         self.clients = [httpx.AsyncClient(timeout=timeout_s) for _ in endpoints]
 
-    def _response_format(self) -> dict[str, Any]:
+    def _response_format(self, force_final: bool = False) -> dict[str, Any]:
         child_schema = {
             "type": "object",
             "properties": {
@@ -591,12 +645,14 @@ class OpenAICompatibleVllmAdapter:
                 "children": {
                     "type": "array",
                     "items": child_schema,
-                    "maxItems": self.max_fanout,
+                    "maxItems": 0 if force_final else self.max_fanout,
                 },
             },
             "required": ["status", "answer", "children"],
             "additionalProperties": False,
         }
+        if force_final:
+            common["properties"]["status"]["enum"] = ["final"]
         return {
             "type": "json_schema",
             "json_schema": {
@@ -606,7 +662,9 @@ class OpenAICompatibleVllmAdapter:
             },
         }
 
-    async def generate(self, worker: int, prompt: str) -> GenerationResult:
+    async def generate(
+        self, worker: int, prompt: str, *, force_final: bool = False
+    ) -> GenerationResult:
         if not 0 <= worker < len(self.endpoints):
             raise ValueError(f"invalid worker index {worker}")
         started = time.perf_counter()
@@ -620,7 +678,7 @@ class OpenAICompatibleVllmAdapter:
                 ],
                 "temperature": 0,
                 "max_tokens": self.max_tokens,
-                "response_format": self._response_format(),
+                "response_format": self._response_format(force_final=force_final),
             },
         )
         if response.status_code >= 400:

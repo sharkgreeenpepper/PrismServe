@@ -210,3 +210,18 @@
 | 2026-10-04 21:41 | /experiment-plan | refine-logs/EXPERIMENT_PLAN.md | implementation | Record B1.5 failure, stop B2/B3, and reconcile 400 GPU-min parent ledger |
 | 2026-10-04 21:41 | /experiment-plan | refine-logs/EXPERIMENT_TRACKER.md | implementation | Mark R003.1 stop-gate failure and R004/R005 not launched |
 | 2026-10-04 21:41 | /idea-discovery | idea-stage/IDEA_REPORT.md | idea-discovery | Update direction-1 assessment with online-tree quality result and stop decision |
+
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/live_tree_contract.py | implementation | Force reserved/depth-limited tree nodes into strict final-answer mode and log finalization state |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/run_live_tree_smoke.py | implementation | Add terminal-budget prompt/schema and numeric final-answer coverage accounting |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_SEARCH_POLICY_DIAGNOSIS_20261004_233149.md | analysis | Diagnose missing final-answer budget and the failed exact-match follow-up |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_SEARCH_POLICY_DIAGNOSIS.md | analysis | Latest diagnosis of terminal-budget quality screen |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_TERMINAL_BUDGET_VALIDATION_PLAN_20261004_233149.md | implementation | Frozen terminal-budget policy, fresh cohort, gates, and completed outcome |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_TERMINAL_BUDGET_VALIDATION_PLAN.md | implementation | Latest terminal-budget quality validation plan and outcome |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_TERMINAL_BUDGET_VALIDATION_REPORT_20261004_233149.md | results | Fresh-cohort paired result; answer coverage passed, exact-match gate failed, B2 stopped |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/pilots/direction1/LIVE_TREE_TERMINAL_BUDGET_VALIDATION_REPORT.md | results | Latest terminal-budget quality validation report |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | refine-logs/EXPERIMENT_PLAN_20261004_233149.md | implementation | Record B1.6 terminal-budget follow-up, gate failure, and updated GPU ledger |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | refine-logs/EXPERIMENT_PLAN.md | implementation | Latest live-tree plan with B1.6 outcome and stop-before-B2 decision |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | refine-logs/EXPERIMENT_TRACKER_20261004_233149.md | implementation | Record R003.2 outcome and stop R004/R005 |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | refine-logs/EXPERIMENT_TRACKER.md | implementation | Latest direction-1 tracker after terminal-budget screen |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/IDEA_REPORT_20261004_233149.md | idea-discovery | Update direction-1 pilot state and current evidence boundary |
+| 2026-10-04 23:31 | /analyze-results + /run-experiment | idea-stage/IDEA_REPORT.md | idea-discovery | Latest idea report after terminal-budget quality screen |
