@@ -49,19 +49,25 @@ Factual request-trace replay previously matched measured timing closely with 1�
 
 There are two runs per cell and only 16 trees. The bootstrap intervals quantify tree-to-tree variation within this chosen cohort; they do not measure run-to-run, time-of-day, or hardware variability. Majority accuracy is 100% for these sampled trees, which is not an accuracy claim for GSM8K overall.
 
-Result-to-claim verdict: no (same-family GPT-6-Astra review; provisional), with high confidence that these results do not support a stable latency claim. The evidence does not justify expanding the current heuristic unchanged or launching a larger GPU matrix. First diagnose placement, generated-token differences, and client/engine admission accounting from existing records; resume only with a distinct mechanism and preregistered practical effect/stopping rule. No independent experiment-integrity audit is available.
+Result-to-claim verdict: no (same-family GPT-6-Astra review; provisional), with high confidence that these results do not support a stable latency claim. Follow-up diagnosis of the existing records found that B2-tree changes 42–47% of assignments while aggregate output-token totals vary only −1.22% to +0.24%; two broad trees (IDs 1 and 13) regress in all four comparisons, including repeats with similar or fewer generated tokens, and show +10–16 s engine-queue increases along their own observed critical paths. See the companion `MECHANISM_DIAGNOSTICS.md` for details. This points to a focused routing diagnosis, not a larger GPU matrix. Resume GPU work only with a distinct mechanism and preregistered practical effect/stopping rule. No independent experiment-integrity audit is available.
 
 ## Reproducibility
 
 - Repeat output and logs: `/home/bumi/infra/cache/prismserve-direction1-replication-20261004/attempt2`
 - First c4 source: `/home/bumi/infra/cache/prismserve-direction1-request-telemetry-20261004/`
 - First c8 source: `/home/bumi/infra/cache/prismserve-direction1-concurrency8-20261004/attempt2/`
-- Analysis script SHA-256: `ec544845c6c90aabe7439c28abc3e79879bb656030aff0aed06b5673d4a4bc0a`
+- Analysis script SHA-256: `0dcd0707379b9d67d09a12838194f7446c5a2c14bbe817d8815e9780b43d3686`
 
 ## Result-to-claim judgment
 
-**Verdict:** `claim_supported: no`. A same-family GPT-6-Astra reviewer using the user's requested light reasoning level judged, with high confidence, that this evidence does not support a stable latency claim. Acceptance remains provisional. The deterministic evidence precheck found 61/61 cited values; this verifies their presence, not their interpretation. No independent experiment-integrity audit is available.
+**Verdict:** `claim_supported: no`. A same-family GPT-6-Astra reviewer using the user's requested light reasoning level judged, with high confidence, that this evidence does not support a stable latency claim. Acceptance remains provisional. The deterministic evidence precheck found 61/61 primary-analysis values and 64/64 follow-up diagnostic values; these checks verify presence, not interpretation. No independent experiment-integrity audit is available.
 
 The reviewer observed that all four run-level p95 maxima numerically favored B2-tree, but each maximum is based on only 16 trees. This does not support a reliable tail-latency claim. The current heuristic should not be expanded unchanged. Any new experiment should start from a concrete revised mechanism and a preregistered practical effect and stopping rule.
+
+## Follow-up mechanism diagnosis
+
+Analysis of the existing request and tree records found 54–60 changed worker assignments per 128-request comparison. Aggregate generated-token totals differed by −1.22% to +0.24%, but the per-tree effect did not follow a consistent token-volume pattern. Trees 1 and 13 (both broad) regressed in all four comparisons; in repeat runs their own observed critical-path engine-queue sums increased by 10.5–15.9 seconds even when generated-token totals were similar or lower. Trees 0 (balanced) and 14 (chain) improved in all four comparisons, including when tree routing generated more tokens. These are individual-question diagnostics, not general shape effects or causal counterfactuals. See [the detailed mechanism diagnostics](B2_ROUTING_MECHANISM_DIAGNOSTICS_20261004.md).
+
+The records narrow the next investigation to why tree-aware placement raises engine-queue delay on the two repeatedly regressing broad trees. Do not expand the current heuristic unchanged or launch a larger GPU matrix without a specific revised mechanism and preregistered effect threshold.
 
 Full raw request, tree, service logs, manifests, and GPU ledger are stored at `/home/bumi/infra/cache/prismserve-direction1-replication-20261004/attempt2/`. The full reviewer trace is local at `.aris/traces/result-to-claim/2026-10-04_run01/` and is excluded from Git.
