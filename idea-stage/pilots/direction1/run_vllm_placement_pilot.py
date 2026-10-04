@@ -802,6 +802,40 @@ async def run_policy(
         choice = result["choices"][0]
         content = choice.get("message", {}).get("content") or ""
         usage = result.get("usage") or {}
+        request_metrics = result.get("metrics") or {}
+        prompt_token_details = usage.get("prompt_tokens_details") or {}
+        if not isinstance(request_metrics, dict):
+            request_metrics = {}
+        if not isinstance(prompt_token_details, dict):
+            prompt_token_details = {}
+        vllm_request_metrics = {
+            "vllm_request_id": result.get("id"),
+            "vllm_queue_time_ms": request_metrics.get("queue_time_ms"),
+            "vllm_time_to_first_token_ms": request_metrics.get("time_to_first_token_ms"),
+            "vllm_generation_time_ms": request_metrics.get("generation_time_ms"),
+            "vllm_mean_itl_ms": request_metrics.get("mean_itl_ms"),
+            "vllm_tokens_per_second": request_metrics.get("tokens_per_second"),
+            "vllm_prompt_cached_tokens": prompt_token_details.get("cached_tokens"),
+            "vllm_prompt_cache_created_tokens": prompt_token_details.get("created_cache_tokens"),
+        }
+        if args.require_vllm_request_metrics:
+            required_fields = (
+                "vllm_request_id",
+                "vllm_queue_time_ms",
+                "vllm_time_to_first_token_ms",
+                "vllm_generation_time_ms",
+                "vllm_prompt_cached_tokens",
+            )
+            missing_fields = [
+                field for field in required_fields if vllm_request_metrics[field] is None
+            ]
+            if missing_fields:
+                raise RuntimeError(
+                    "Required vLLM request telemetry is missing: "
+                    f"{', '.join(missing_fields)}. Start the server with "
+                    "--enable-per-request-metrics and --enable-prompt-tokens-details; "
+                    "per-request metrics also require engine stats logging."
+                )
         completion_tokens = int(usage.get("completion_tokens", 0))
         finish_reason = choice.get("finish_reason", "unknown")
         if args.fixed_output_tokens is not None and (
@@ -832,6 +866,7 @@ async def run_policy(
             "prompt_tokens": int(usage.get("prompt_tokens", len(prompt_ids))),
             "completion_tokens": completion_tokens,
             "finish_reason": finish_reason,
+            **vllm_request_metrics,
         }
 
     try:
@@ -966,6 +1001,16 @@ async def run_policy(
                         "prompt_tokens": result["prompt_tokens"],
                         "completion_tokens": result["completion_tokens"],
                         "finish_reason": result["finish_reason"],
+                        "vllm_request_id": result["vllm_request_id"] or "",
+                        "vllm_queue_time_ms": result["vllm_queue_time_ms"],
+                        "vllm_time_to_first_token_ms": result["vllm_time_to_first_token_ms"],
+                        "vllm_generation_time_ms": result["vllm_generation_time_ms"],
+                        "vllm_mean_itl_ms": result["vllm_mean_itl_ms"],
+                        "vllm_tokens_per_second": result["vllm_tokens_per_second"],
+                        "vllm_prompt_cached_tokens": result["vllm_prompt_cached_tokens"],
+                        "vllm_prompt_cache_created_tokens": result[
+                            "vllm_prompt_cache_created_tokens"
+                        ],
                         "latency_s": round(result["latency_s"], 6),
                         "is_leaf": node.is_leaf,
                         "expected_answer": tree.expected_answer if node.is_leaf else "",
@@ -1165,6 +1210,22 @@ async def run_policy(
     ]
     total_queue_metric_s = sum(value for value in queue_metric_sums if value is not None)
     total_queue_metric_count = sum(value for value in queue_metric_counts if value is not None)
+    request_timing_rows = [
+        row for row in request_rows if row["vllm_queue_time_ms"] is not None
+    ]
+    request_cache_rows = [
+        row for row in request_rows if row["vllm_prompt_cached_tokens"] is not None
+    ]
+    request_ttft_values = [
+        row["vllm_time_to_first_token_ms"]
+        for row in request_rows
+        if row["vllm_time_to_first_token_ms"] is not None
+    ]
+    request_generation_values = [
+        row["vllm_generation_time_ms"]
+        for row in request_rows
+        if row["vllm_generation_time_ms"] is not None
+    ]
     summary = {
         "strategy": args.strategy,
         "run_label": args.run_label,
@@ -1190,6 +1251,7 @@ async def run_policy(
         "max_tokens_inner": args.max_tokens_inner,
         "max_tokens_leaf": args.max_tokens_leaf,
         "fixed_output_tokens": args.fixed_output_tokens,
+        "require_vllm_request_metrics": args.require_vllm_request_metrics,
         "ignore_eos": args.fixed_output_tokens is not None,
         "temperature": 0,
         "max_concurrency_per_worker": args.max_concurrency,
@@ -1245,6 +1307,32 @@ async def run_policy(
             else None
         ),
         "vllm_request_queue_observation_count": total_queue_metric_count,
+        "vllm_request_id_observation_count": sum(
+            bool(row["vllm_request_id"]) for row in request_rows
+        ),
+        "vllm_per_request_timing_observation_count": len(request_timing_rows),
+        "vllm_prompt_token_detail_observation_count": len(request_cache_rows),
+        "vllm_per_request_queue_time_mean_ms": (
+            round(statistics.mean(row["vllm_queue_time_ms"] for row in request_timing_rows), 6)
+            if request_timing_rows
+            else None
+        ),
+        "vllm_per_request_time_to_first_token_mean_ms": (
+            round(statistics.mean(request_ttft_values), 6)
+            if request_ttft_values
+            else None
+        ),
+        "vllm_per_request_generation_time_mean_ms": (
+            round(statistics.mean(request_generation_values), 6)
+            if request_generation_values
+            else None
+        ),
+        "vllm_prompt_cached_tokens_total": sum(
+            row["vllm_prompt_cached_tokens"] for row in request_cache_rows
+        ),
+        "vllm_prompt_cache_created_tokens_total": sum(
+            row["vllm_prompt_cache_created_tokens"] or 0 for row in request_cache_rows
+        ),
     }
     for row in tree_rows:
         row.update(args._run_provenance)
@@ -1384,6 +1472,7 @@ async def async_main(args: argparse.Namespace) -> None:
         "max_tokens_inner": args.max_tokens_inner,
         "max_tokens_leaf": args.max_tokens_leaf,
         "fixed_output_tokens": args.fixed_output_tokens,
+        "require_vllm_request_metrics": args.require_vllm_request_metrics,
         "temperature": 0,
         "max_concurrency": args.max_concurrency,
         "router_capacity": args.router_capacity or args.max_concurrency,
@@ -1469,6 +1558,15 @@ def parse_args() -> argparse.Namespace:
         "--fixed-output-tokens",
         type=int,
         help="Force exactly this many generated tokens per request; disables EOS stopping",
+    )
+    parser.add_argument(
+        "--require-vllm-request-metrics",
+        action="store_true",
+        help=(
+            "Fail if vLLM does not return per-request timing and prompt-cache metrics; "
+            "requires --enable-per-request-metrics and --enable-prompt-tokens-details "
+            "on the server"
+        ),
     )
     parser.add_argument("--request-timeout-s", type=float, default=300.0)
     parser.add_argument("--prefill-tps", type=float, default=25000.0)
