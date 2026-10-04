@@ -1,0 +1,5 @@
+Reviewer request reconstruction for `/root/direction1_b1_integrity_audit_light`:
+
+Perform a read-only adversarial integrity audit of the live-tree B1 run. Inspect the live-tree runner, adapter, calibration and comparison scripts; the B1 cohort, configs, event logs, summaries, comparison, budget and launch records; the experiment plan/tracker; and the direct-answer diagnostic only as context. Check ground-truth provenance, metric arithmetic/normalization, file/result/claim consistency, live versus fixture-only checks, scope and run-order/cache confounds, and evaluation-type classification. Return PASS/WARN/FAIL by check with exact file/line evidence and narrow claim implications. Use GPT-6-Astra with light reasoning, as requested by the user. Do not modify files or run experiments.
+
+This trace records the reviewer request as reconstructed from the session; the skill required a fresh reviewer and did not require a verbatim transcript file.

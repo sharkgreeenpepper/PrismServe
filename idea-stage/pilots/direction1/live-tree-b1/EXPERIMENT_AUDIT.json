@@ -1,0 +1,72 @@
+{
+  "audit_skill": "experiment-audit",
+  "verdict": "WARN",
+  "reason_code": "scope_and_quality_do_not_support_performance_claim",
+  "summary": "B1 supports only that the unseen-work term changed same-snapshot assignments on 8/8 observed questions. All trees hit the node cap; answer coverage was 3/8 per arm and exact match 1/8 per arm. No predictor generalization or causal latency benefit is established.",
+  "audited_input_hashes": {
+    "dataset_sha256": "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14",
+    "run_artifact_manifest_sha256": "80f4f3dd411e9db9ea5741319a58841fbab3dd112e5aae11803aaaa9e0bf8326"
+  },
+  "trace_path": ".aris/traces/experiment-audit/2026-10-04_run01/",
+  "agent_id": "/root/direction1_b1_integrity_audit_light",
+  "verdict_id": "/root/direction1_b1_integrity_audit_light",
+  "executor_model": "codex-gpt-6",
+  "executor_family": "openai",
+  "reviewer_model": "gpt-6-astra",
+  "reviewer_family": "openai",
+  "reviewer_reasoning": "low",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "generated_at": "2026-10-04T13:28:10Z",
+  "date": "2026-10-04",
+  "auditor": "gpt-6-astra-light",
+  "overall_verdict": "warn",
+  "integrity_status": "warn",
+  "checks": {
+    "gt_provenance": {
+      "status": "pass",
+      "details": "GSM8K dataset answers are loaded only for offline scoring; prompts contain no gold answer. Evaluation is custom majority-of-terminal-JSON exact match, not the official GSM8K pipeline."
+    },
+    "score_normalization": {
+      "status": "pass_with_calibration_caveat",
+      "details": "Reported exact-match counts and latency are raw. Predictor RMSE is in-sample on 32 observations from four budget-capped calibration trees; there is no held-out accuracy evidence."
+    },
+    "result_existence": {
+      "status": "warn",
+      "details": "Raw events, configs, summaries, comparisons, and logs exist and reconcile. tree_completed means queues drained, including budget-pruned trees; the B1 gate does not test natural stopping, answer availability, quality, predictor accuracy, or causal latency."
+    },
+    "dead_code": {
+      "status": "pass_with_coverage_caveat",
+      "details": "Reported parsing, aggregation, telemetry, and calibration metrics are exercised. Several ordering/failure invariants are fixture-only and are not automatically asserted by the live runner."
+    },
+    "scope": {
+      "status": "warn",
+      "details": "One model, one dataset split, four calibration questions, eight test questions, and one run per arm. Questions ran sequentially; p95 is the maximum. Cache/order confounding and missing scheduler CPU timing prevent performance attribution."
+    },
+    "eval_type": "real_gt_custom_offline_exact_match; live_vllm_latency_and_request_metrics; self_supervised_proxy_work_calibration; simulation_only_fixtures"
+  },
+  "claims": [
+    {
+      "id": "M1-route-change",
+      "impact": "supported_narrowly",
+      "scope": "The term changed at least one same-state assignment on 8/8 observed questions."
+    },
+    {
+      "id": "online-tree-execution",
+      "impact": "needs_qualifier",
+      "scope": "Live model requests exercised expansion and pruning under a 9-node cap, but all corrected trees saturated that cap."
+    },
+    {
+      "id": "predictor_accuracy",
+      "impact": "unsupported"
+    },
+    {
+      "id": "useful_natural_tree_completion",
+      "impact": "unsupported"
+    },
+    {
+      "id": "causal_latency_or_slo_benefit",
+      "impact": "unsupported"
+    }
+  ]
+}

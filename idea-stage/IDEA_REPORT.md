@@ -40,6 +40,7 @@
 - **风险：** 中。分支生命周期和 KV 复用难预测，传输/重算估计可能无法战胜简单局部性策略。
 - **贡献类型：** 系统方法 + 实证分析。
 - **Pilot 结果：** CPU 结构模拟中，oracle sibling-aware 策略没有稳定胜过 KV-cost。后续已在 4 张 GPU 上用 DeepSeek-R1-Distill-Llama-70B/vLLM 对 8 棵冻结输入树进行真实推理：4 种策略的答案准确率均为 7/8；least-loaded 相对 local-only 的树级 p95 低 2.3%，但 p50 慢 18.0%；KV-cost 与 sibling-lookahead 的 p95 分别慢 5.6% 和 4.1%。每策略只有 8 棵树且单次运行，p95 是最大观测值，不能视为稳定收益；当前 pilot 不支持将树感知策略集成进系统。设置、原始输出和局限见 [`REAL_PLACEMENT_PILOT_REPORT.md`](pilots/direction1/REAL_PLACEMENT_PILOT_REPORT.md)；CPU 结构模拟结果见 [`STRUCTURAL_PILOT_REPORT.md`](pilots/direction1/STRUCTURAL_PILOT_REPORT.md)。
+- **在线树跟进（2026-10-04）：** B1 在 8/8 题的同状态反事实中改变了至少一个派发决策，但每臂仅 3/8 题产生答案、exact match 1/8，16/16 棵树都触及 9 节点上限；独立审计为 WARN。随后严格 schema 同题质量门在新 16 题上通过结构有效性（136 个节点无 invalid output），但树答案覆盖只有 3/16、exact match 2/16，低于 direct-answer 对照 6/16，13/16 棵树仍达到节点上限。答案覆盖和准确率筛查门失败，因此停止四臂调度比较；没有延迟/SLO收益证据。详见 [`LIVE_TREE_QUALITY_VALIDATION_REPORT_20261004.md`](pilots/direction1/LIVE_TREE_QUALITY_VALIDATION_REPORT_20261004.md) 与 [`live-tree-b1/EXPERIMENT_AUDIT.md`](pilots/direction1/live-tree-b1/EXPERIMENT_AUDIT.md)。
 - **评审者最强反对意见：** 这可能只是把 MemServe/MELL 的队列与 KV 成本规则用于 Locality-aware Fair Scheduling 已研究过的分布式树工作负载。若不能测出“共享祖先、分支不均衡、未来后继工作或搜索完成时间”至少一个对普通请求路由有实质影响，差异会过薄。
 - **为什么值得做：** 它正面对应 PrismServe 的多 GPU 资源协同，并能给出可证伪结论：搜索树结构是否值得进入服务调度器的成本模型。
 
@@ -100,17 +101,17 @@
 
 ## Pilot 状态
 
-本轮方向一完成 CPU 结构模拟及真实 vLLM 推理 pilot。真实 pilot 使用 4 张 GPU、DeepSeek-R1-Distill-Llama-70B、8 个 GSM8K 样本和 4 类合成树形；每种策略 8 棵树、64 个节点请求。各策略答案准确率均为 7/8，树感知启发式未优于 local-only 的 p95。由于只有单次小样本冻结回放，结果仅作早期信号，不能排除运行波动或动态搜索中的不同结果。GPU pilot 的完整方法和局限见 [`REAL_PLACEMENT_PILOT_REPORT.md`](pilots/direction1/REAL_PLACEMENT_PILOT_REPORT.md)。
+方向一先后完成 CPU 结构模拟、冻结树真实推理 pilot、真实在线树机制 screen 和同题严格 schema 质量门。历史冻结树结果中，各策略准确率均为 7/8，树感知启发式没有稳定胜过 local-only。在线 B1 虽然证明预测项能改变派发选择，却未产生足够答案；同题质量门也未通过，因此当前不再运行 scheduler 强基线矩阵，方向一的性能/论文主张停止。已有实验不支持延迟收益或通用调度优势。
 
 | 优先方向 | Pilot GPU/时长 | 最关键的首轮观察 | 当前状态 |
 |---|---|---|---|
-| 推理树分支放置 | 已用 4 GPU 完成小规模推理；扩展前需更真实动态轨迹和重复运行 | 搜索准确率匹配时，p95 solve latency 是否优于 MemServe 风格成本路由 | 小样本 pilot 未验证树感知收益；不建议当前集成 |
+| 推理树分支放置 | 400 GPU-min 授权中累计使用 243.615；服务已停止 | 严格 schema 的 live tree 是否能在固定搜索策略下达到答案覆盖与准确率门 | B1.5 质量门失败（tree 3/16 有答案、2/16 exact match）；停止 scheduler 矩阵，不支持当前论文性能主张 |
 | 服务状态选策略 | 1–2 H20；单卡 1–2 小时 | 同一题是否随队列压力发生策略排名反转 | SKIPPED：缺 runtime/模型 |
 | SD 盈亏边界 | 1–2 H20；单卡 1–2 小时 | 匹配接受率时是否出现 TP/链路/prefill 引起的收益反转 | SKIPPED：缺 runtime/模型 |
 
 ## 建议推进顺序
 
-1. **方向一暂不集成树感知调度器**：真实 vLLM 小 pilot 未显示相对通用路由的稳定 p95 收益；若继续投入，应先采用真实动态搜索轨迹、增加树数量与独立重复，并实现可测量的 KV 迁移/链路成本。
+1. **方向一停止当前调度器主张**：live-tree B1 的路由变化不等于质量或性能收益；严格 schema 同题验证未达到答案覆盖/准确率门。若未来重启此方向，应先改进搜索与终止策略并在新 cohort 上通过质量门，再规划包含强基线、反序重复、cache 控制和调度开销的实验。
 2. **若准备 runtime 的成本过高，转做 SD 盈亏边界的受控测量**：变量更容易隔离；若没有跨配置预测能力，应收敛为边界图或停止方法主张。
 3. **服务状态选策略保留为高上限方向**：先离线检查同题在不同服务状态下是否发生策略排名反转，再投资在线策略实现。
 
