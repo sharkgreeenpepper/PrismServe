@@ -200,6 +200,7 @@ class BudgetController:
                 "work_remaining_s": round(max(0.0, self.work_remaining_s), 3),
                 "cuda_home": self.args.cuda_home,
                 "sampling_backend": "vllm-native (VLLM_USE_FLASHINFER_SAMPLER=0)",
+                "request_telemetry_enabled": self.args.enable_request_telemetry,
                 "last_error": self.last_error,
                 "stages": self.stage_records,
                 "logs_dir": str(self.log_dir),
@@ -260,6 +261,10 @@ class BudgetController:
                 "--tokenizer",
                 self.args.tokenizer_dir,
             ]
+            if self.args.enable_request_telemetry:
+                command.extend(
+                    ["--enable-per-request-metrics", "--enable-prompt-tokens-details"]
+                )
             with (self.log_dir / f"vllm-replica-{replica}.log").open(
                 "w", encoding="utf-8"
             ) as log:
@@ -440,6 +445,8 @@ class BudgetController:
         ]
         if self.args.fixed_output_tokens is not None:
             base_common.extend(["--fixed-output-tokens", str(self.args.fixed_output_tokens)])
+        if self.args.enable_request_telemetry:
+            base_common.append("--require-vllm-request-metrics")
         calibrator = script_dir / "calibrate_vllm_service_rates.py"
         runner = project_dir / "idea-stage/pilots/direction1/run_vllm_placement_pilot.py"
         if self.args.prepare_independent_trace:
@@ -781,6 +788,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-references", action="store_true")
     parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--fixed-output-tokens", type=int)
+    parser.add_argument(
+        "--enable-request-telemetry",
+        action="store_true",
+        help=(
+            "Enable per-request vLLM timing/prompt-cache metrics and fail runs "
+            "that do not return all required fields"
+        ),
+    )
     args = parser.parse_args()
     if len(set(args.gpu_ids)) != 4 or any(gpu < 0 for gpu in args.gpu_ids):
         parser.error("--gpu-ids must contain four distinct non-negative indices")
@@ -963,7 +978,9 @@ def main() -> int:
             "router_capacity_per_worker": 2,
             "request_timeout_s": 300,
             "reset_prefix_cache_before_each_arm": True,
+            "require_vllm_request_metrics": args.enable_request_telemetry,
         },
+        "request_telemetry_enabled": args.enable_request_telemetry,
         "gpu_ids": args.gpu_ids,
         "max_gpu_min": args.max_gpu_min,
         "prior_gpu_min": args.prior_gpu_min,
