@@ -437,6 +437,7 @@ class Router:
         max_tokens_inner: int,
         max_tokens_leaf: int,
         output_profile: dict[str, float] | None = None,
+        tree_work_weight: float = 1.0,
     ) -> None:
         self.policy = policy
         self.endpoints = endpoints
@@ -448,6 +449,7 @@ class Router:
         self.max_tokens_inner = max_tokens_inner
         self.max_tokens_leaf = max_tokens_leaf
         self.output_profile = output_profile or {}
+        self.tree_work_weight = tree_work_weight
         self.pending_work = [0.0 for _ in endpoints]
         self.cache_sequences: list[list[list[int]]] = [[] for _ in endpoints]
         self.round_robin = 0
@@ -599,7 +601,8 @@ class Router:
                         node, ids, worker, use_output_profile=True
                     )
                     remaining = self.remaining_tree_work_estimate(node, worker)
-                    charged = estimate + (remaining if use_tree_term else 0.0)
+                    tree_weight = self.tree_work_weight if use_tree_term else 0.0
+                    charged = estimate + tree_weight * remaining
                     projected[worker] += charged / self.capacity
                     current_work += estimate
                     node_costs.append((estimate, cached, remaining, self.pending_work[worker] / self.capacity))
@@ -710,6 +713,7 @@ async def run_policy(
         args.max_tokens_inner,
         args.max_tokens_leaf,
         output_profile,
+        args.tree_work_weight,
     )
     # Keep the local-only control balanced across tree shapes. Cycling a
     # fixed shape order against tree_id % worker_count confounds placement
@@ -991,6 +995,11 @@ async def run_policy(
                         "predicted_queue_work_s": round(route.queue_estimate_s, 6),
                         "predicted_current_service_s": round(route.estimate_s, 6),
                         "predicted_remaining_tree_work_s": round(route.remaining_work_estimate_s, 6),
+                        "tree_work_weight": (
+                            args.tree_work_weight
+                            if args.strategy == "kv-cost-group-tree"
+                            else 0.0
+                        ),
                         "projected_group_peak_s": (
                             round(route.projected_peak_s, 6)
                             if route.projected_peak_s is not None
@@ -1250,6 +1259,11 @@ async def run_policy(
         ),
         "max_tokens_inner": args.max_tokens_inner,
         "max_tokens_leaf": args.max_tokens_leaf,
+        "tree_work_weight": (
+            args.tree_work_weight
+            if args.strategy == "kv-cost-group-tree"
+            else 0.0
+        ),
         "fixed_output_tokens": args.fixed_output_tokens,
         "require_vllm_request_metrics": args.require_vllm_request_metrics,
         "ignore_eos": args.fixed_output_tokens is not None,
@@ -1376,6 +1390,8 @@ async def async_main(args: argparse.Namespace) -> None:
         raise ValueError("The direction-1 placement pilot needs at least two serving replicas")
     if args.router_capacity is not None and args.router_capacity < 1:
         raise ValueError("--router-capacity must be positive")
+    if not 0.0 <= args.tree_work_weight <= 1.0:
+        raise ValueError("--tree-work-weight must be between 0.0 and 1.0")
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_dir, local_files_only=True)
     all_trees = load_trees(Path(args.dataset), args.questions, args.seed)
     trees = all_trees
@@ -1471,6 +1487,11 @@ async def async_main(args: argparse.Namespace) -> None:
         "output_length_profile_sha256": optional_file_sha256(args.output_length_profile_json),
         "max_tokens_inner": args.max_tokens_inner,
         "max_tokens_leaf": args.max_tokens_leaf,
+        "tree_work_weight": (
+            args.tree_work_weight
+            if args.strategy == "kv-cost-group-tree"
+            else 0.0
+        ),
         "fixed_output_tokens": args.fixed_output_tokens,
         "require_vllm_request_metrics": args.require_vllm_request_metrics,
         "temperature": 0,
@@ -1502,6 +1523,7 @@ async def async_main(args: argparse.Namespace) -> None:
     summary["dataset_source"] = "https://github.com/openai/grade-school-math"
     summary["dataset_seed"] = args.seed
     summary["prompt_trace_sha256"] = trace_digest or ""
+    summary["tree_work_weight"] = run_config["tree_work_weight"]
     summary["service_profile_sha256"] = run_config["service_profile_sha256"]
     summary["output_length_profile_sha256"] = run_config[
         "output_length_profile_sha256"
@@ -1575,6 +1597,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-length-profile-json", default="")
     parser.add_argument("--tree-ids", nargs="+", type=int, default=[])
     parser.add_argument("--router-capacity", type=int)
+    parser.add_argument(
+        "--tree-work-weight",
+        type=float,
+        default=1.0,
+        help=(
+            "Weight for predicted descendant work in kv-cost-group-tree placement; "
+            "1.0 preserves the original policy"
+        ),
+    )
     parser.add_argument("--reset-prefix-cache", action="store_true")
     parser.add_argument("--omit-output-text", action="store_true")
     parser.add_argument("--run-label", default="")

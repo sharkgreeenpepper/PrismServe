@@ -134,3 +134,6 @@
 | 2026-10-01 23:40 | /run-experiment | idea-stage/pilots/direction1/mechanism-ablation/INDEPENDENT_COHORT_PLAN.md | implementation | Recorded completed execution and final budget outcome without changing frozen criteria |
 | 2026-10-01 23:40 | /run-experiment | idea-stage/pilots/direction1/mechanism-ablation/INDEPENDENT_COHORT_PLAN_20261001_225951.md | implementation | Timestamped frozen plan updated with completion record |
 | 2026-10-01 23:40 | /run-experiment | idea-stage/pilots/direction1/mechanism-ablation/run_bounded_matrix.py | implementation | Added bounded continuation, prior-profile reuse, and selected-primary-run options used to finish B2-flat |
+| 2026-10-04 12:44 | /experiment-plan | idea-stage/pilots/direction1/mechanism-ablation/WEIGHTED_LOOKAHEAD_PLAN_20261004_124417.md | implementation | 冻结折扣后代工作量权重机制筛查设计与 GPU 停止门槛 |
+| 2026-10-04 12:44 | /experiment-plan | idea-stage/pilots/direction1/mechanism-ablation/WEIGHTED_LOOKAHEAD_PLAN.md | implementation | 当前折扣后代工作量权重机制筛查计划 |
+| 2026-10-04 12:44 | /experiment-bridge | idea-stage/pilots/direction1/mechanism-ablation/run_weighted_lookahead_screen.py | implementation | 加入三权重顺序平衡运行器、阶段筛查门和 200 GPU-min 硬上限 |
