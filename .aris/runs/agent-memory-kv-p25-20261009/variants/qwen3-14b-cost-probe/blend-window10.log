@@ -1,0 +1,769 @@
+INFO 10-10 13:36:57 [api_utils.py:286] non-default args: {'dtype': 'bfloat16', 'seed': 17, 'max_model_len': 32768, 'enable_prefix_caching': False, 'gpu_memory_utilization': 0.5, 'max_num_batched_tokens': 32768, 'max_num_seqs': 8, 'enforce_eager': True, 'attention_config': AttentionConfig(backend=<AttentionBackendEnum.FLASH_ATTN: 'vllm.v1.attention.backends.flash_attn.FlashAttentionBackend'>, minimax_m3_msa_decode_backend='triton', backend_per_kind={}, flash_attn_version=None, flash_attn_max_num_splits_for_cuda_graph=32, tq_max_kv_splits_for_cuda_graph=32, use_trtllm_attention=None, disable_flashinfer_q_quantization=False, mla_prefill_backend=None, use_prefill_query_quantization=False, indexer_kv_dtype='auto', hisparse_config=None, use_non_causal=False, sparse_mla_force_mqa=False, flex_attn_block_m=None, flex_attn_block_n=None, flex_attn_q_block_size=None, flex_attn_kv_block_size=None), 'kv_transfer_config': KVTransferConfig(kv_connector='LMCacheConnectorV1', engine_id='8767dd73-eb0b-4504-a2db-500a9ab988f2', kv_buffer_device='cuda', kv_buffer_size=1000000000.0, kv_role='kv_both', kv_rank=None, kv_parallel_size=1, kv_ip='127.0.0.1', kv_port=14579, kv_connector_extra_config={}, kv_connector_module_path=None, enable_permute_local_kv=False, kv_load_failure_policy='fail'), 'model': '/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B'}
+INFO 10-10 13:36:57 [model.py:692] Resolved architecture: Qwen3ForCausalLM
+INFO 10-10 13:36:57 [model.py:2030] Using max model len 32768
+INFO 10-10 13:36:57 [scheduler.py:288] Chunked prefill is enabled with max_num_batched_tokens=32768.
+WARNING 10-10 13:36:57 [vllm.py:1547] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 10-10 13:36:57 [vllm.py:1570] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 10-10 13:36:57 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-10 13:36:57 [vllm.py:1780] Cudagraph is disabled under eager mode
+WARNING 10-10 13:36:57 [vllm.py:2022] Turning off hybrid kv cache manager because `--kv-transfer-config` selects a KV connector that does not support it. Impact: hybrid SSM models (e.g. Jamba, Bamba) require HMA and will fail at startup without it; models with sliding window attention will run with reduced performance. To add HMA support to a KV connector, subclass `SupportsHMA` defined in kv_connector/v1/base.py (for MultiConnector, all child connectors must support HMA).
+INFO 10-10 13:36:57 [compilation.py:336] Enabled custom fusions: norm_quant, act_quant
+(EngineCore pid=695565) INFO 10-10 13:36:59 [core.py:123] Initializing a V1 LLM engine (v0.30.0) with config: model='/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B', speculative_config=None, tokenizer='/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=17, served_model_name=/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=695565) INFO 10-10 13:37:00 [parallel_state.py:1827] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///home/bumi/infra/tmp/agent-memory-kv-p25/vllm_dist_2815b3800ff64d9ba9ee6793bf503fc7 backend=nccl
+(EngineCore pid=695565) INFO 10-10 13:37:00 [parallel_state.py:2267] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=695565) INFO 10-10 13:37:01 [topk_topp_sampler.py:62] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(EngineCore pid=695565) INFO 10-10 13:37:01 [gpu_model_runner.py:5317] Starting to load model /home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B...
+(EngineCore pid=695565) INFO 10-10 13:37:02 [cuda.py:478] Using AttentionBackendEnum.FLASH_ATTN backend.
+(EngineCore pid=695565) INFO 10-10 13:37:02 [flash_attn.py:1116] Using FlashAttention version 3
+(EngineCore pid=695565) INFO 10-10 13:37:02 [weight_utils.py:895] Filesystem type for checkpoints: XFS. Checkpoint size: 27.51 GiB. Available RAM: 1878.34 GiB.
+(EngineCore pid=695565) INFO 10-10 13:37:02 [weight_utils.py:918] Auto-prefetch is disabled because the filesystem (XFS) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=695565) Loading safetensors checkpoint shards:   0% Completed | 0/8 [00:00<?, ?it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  12% Completed | 1/8 [00:00<00:04,  1.64it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  25% Completed | 2/8 [00:01<00:03,  1.50it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  38% Completed | 3/8 [00:02<00:03,  1.46it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  50% Completed | 4/8 [00:02<00:02,  1.45it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  62% Completed | 5/8 [00:03<00:02,  1.45it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  75% Completed | 6/8 [00:04<00:01,  1.46it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards:  88% Completed | 7/8 [00:04<00:00,  1.46it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards: 100% Completed | 8/8 [00:05<00:00,  1.73it/s]
+(EngineCore pid=695565) Loading safetensors checkpoint shards: 100% Completed | 8/8 [00:05<00:00,  1.57it/s]
+(EngineCore pid=695565) 
+(EngineCore pid=695565) INFO 10-10 13:37:07 [default_loader.py:430] Loading weights took 5.14 seconds
+(EngineCore pid=695565) INFO 10-10 13:37:07 [gpu_model_runner.py:5416] Model loading took 27.52 GiB memory and 5.400684 seconds
+(EngineCore pid=695565) INFO 10-10 13:37:07 [utils.py:320] Using LBNHC KV cache layout.
+(EngineCore pid=695565) INFO 10-10 13:37:15 [gpu_worker.py:640] Available KV cache memory: 15.06 GiB
+(EngineCore pid=695565) INFO 10-10 13:37:15 [kv_cache_utils.py:2395] GPU KV cache size: 98,720 tokens, Maximum concurrency for 32,768 tokens per request: 3.01x
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,431] LMCache INFO:[0m torch_dev=<module 'torch.cuda' from '/home/bumi/infra/runtime/agent-memory-kv-p25-20261009/lib/python3.10/site-packages/torch/cuda/__init__.py'>, torch_device_type=cuda [3m(_device_detect.py:312:lmcache.v1.platform._device_detect)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,432] LMCache INFO:[0m Auto-selected backend [cuda] for accelerator 'cuda' from candidate backends [cuda, rocm]. [3m(__init__.py:148:lmcache.v1.platform)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,477] LMCache INFO:[0m Registering vllm model for vllm-instance [3m(utils.py:50:lmcache.v1.compute.models.utils)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:15 [factory.py:62] Creating v1 connector with name: LMCacheConnectorV1 and engine_id: 8767dd73-eb0b-4504-a2db-500a9ab988f2
+(EngineCore pid=695565) WARNING 10-10 13:37:15 [base.py:217] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
+(EngineCore pid=695565) INFO 10-10 13:37:15 [lmcache_connector.py:105] Initializing latest dev LMCache connector
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,615] LMCache INFO:[0m Discovered API module: env_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,631] LMCache INFO:[0m Discovered API module: loglevel_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,632] LMCache INFO:[0m Discovered API module: metrics_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,634] LMCache INFO:[0m Discovered API module: periodic_thread_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,635] LMCache INFO:[0m Discovered API module: run_script_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,636] LMCache INFO:[0m Discovered API module: thread_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,642] LMCache INFO:[0m Discovered API module: backend_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,643] LMCache INFO:[0m Discovered API module: bypass_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,648] LMCache INFO:[0m Discovered API module: cache_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,655] LMCache INFO:[0m Discovered API module: chunk_statistics_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,657] LMCache INFO:[0m Discovered API module: conf_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,657] LMCache INFO:[0m Discovered API module: freeze_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,658] LMCache INFO:[0m Discovered API module: hot_cache_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,659] LMCache INFO:[0m Discovered API module: inference_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,664] LMCache INFO:[0m Discovered API module: load_fs_chunks_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,665] LMCache INFO:[0m Discovered API module: lookup_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,666] LMCache INFO:[0m Discovered API module: version_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,677] LMCache INFO:[0m Discovered API module: key_stats_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,679] LMCache INFO:[0m Discovered API module: worker_info_api [3m(router_discovery.py:53:lmcache.v1.utils.router_discovery)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,698] LMCache INFO:[0m Loading LMCache config file /home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/configs/blend.yaml [3m(utils.py:198:lmcache.integration.vllm.utils)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:15,699] LMCache WARNING:[0m Automatically setting save_unfull_chunk=True because enable_blending=True [3m(config.py:711:lmcache.v1.config)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,700] LMCache INFO:[0m num_layer: 40, chunk_size: 256, num_kv_head (per gpu): 8, head_size: 128, hidden_dim (D) for KV (per gpu): 1024, use mla: False, kv shape: (40, 2, 256, 8, 128), num_draft_layers: 0 [3m(vllm_service_factory.py:111:lmcache.integration.vllm.vllm_service_factory)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,700] LMCache INFO:[0m Creating LMCacheEngine instance vllm-instance [3m(cache_engine.py:2136:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,700] LMCache INFO:[0m NUMA mapping for instance vllm-instance: None [3m(cache_engine.py:2139:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:15,701] LMCache WARNING:[0m Could not load 'builtin' from vLLM. Using builtin hash. This may cause inconsistencies in distributed caching. [3m(token_database.py:162:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,701] LMCache INFO:[0m Initialized NONE_HASH=5142730886103928707 from vLLM (>= PR#20511) [3m(token_database.py:100:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:15,701] LMCache INFO:[0m Using hash algorithm: builtin [3m(token_database.py:110:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,241] LMCache INFO:[0m Creating LMCacheEngine with config: {'chunk_size': 256, 'local_cpu': True, 'max_local_cpu_size': 20.0, 'local_cpu_use_hugepages': False, 'reserve_local_cpu_size': 0.0, 'local_disk': None, 'local_disk_path_sharding': 'by_gpu', 'max_local_disk_size': 0.0, 'remote_url': None, 'remote_serde': 'naive', 'use_layerwise': True, 'save_decode_cache': False, 'pre_caching_hash_algorithm': 'builtin', 'enable_blending': True, 'blend_recompute_ratios': [0.05], 'blend_thresholds': None, 'blend_check_layers': [1], 'blend_min_tokens': 256, 'blend_special_str': ' # #', 'retrieve_locations': None, 'store_location': None, 'enable_p2p': False, 'p2p_host': None, 'p2p_init_ports': None, 'p2p_lookup_ports': None, 'mp_host': None, 'mp_port': 5555, 'enable_controller': False, 'lmcache_instance_id': 'lmcacheengineconfig_af8d7dfc325a4ea391fb304c261f8731', 'controller_pull_url': None, 'controller_reply_url': None, 'lmcache_worker_ports': None, 'lmcache_worker_ids': None, 'lmcache_worker_heartbeat_delay_time': 10, 'lmcache_worker_heartbeat_time': None, 'enable_pd': False, 'pd_role': None, 'pd_buffer_size': None, 'pd_buffer_device': None, 'pd_peer_host': None, 'pd_peer_init_port': None, 'pd_peer_alloc_port': None, 'pd_peer_query_port': None, 'pd_proxy_host': None, 'pd_proxy_port': None, 'pd_allocation_timeout_sec': inf, 'pd_shutdown_timeout_sec': 5.0, 'pd_condition_poll_interval_sec': 0.005, 'pd_max_prefill_len': 0, 'pd_backend_mode': 'async', 'pd_skip_proxy_notification': False, 'pd_bidirectional': False, 'transfer_channel': None, 'nixl_backends': None, 'nixl_buffer_size': None, 'nixl_buffer_device': None, 'gds_path': None, 'gds_path_sharding': 'by_gpu', 'gds_buffer_size': None, 'maru_path': None, 'maru_pool_size': 4.0, 'use_gds': True, 'gds_backend': 'cufile', 'audit_actual_remote_url': None, 'internal_api_server_host': '0.0.0.0', 'extra_config': {'enable_sparse': False}, 'save_unfull_chunk': True, 'blocking_timeout_secs': 10, 'external_lookup_client': None, 'py_enable_gc': True, 'cache_policy': 'LRU', 'numa_mode': None, 'enable_async_loading': False, 'internal_api_server_enabled': False, 'internal_api_server_port_start': 6999, 'priority_limit': None, 'internal_api_server_include_index_list': None, 'internal_api_server_socket_path_prefix': None, 'runtime_plugin_locations': None, 'storage_plugins': None, 'remote_storage_plugins': None, 'lookup_timeout_ms': 3000, 'min_retrieve_tokens': 0, 'hit_miss_ratio': None, 'lookup_server_worker_ids': None, 'enable_scheduler_bypass_lookup': False, 'script_allowed_imports': None, 'enable_lazy_memory_allocator': False, 'lazy_memory_initial_ratio': 0.2, 'lazy_memory_expand_trigger_ratio': 0.5, 'lazy_memory_step_ratio': 0.1, 'lazy_memory_safe_size': 0.0, 'enable_chunk_statistics': False, 'chunk_statistics_auto_start_statistics': False, 'chunk_statistics_auto_exit_timeout_hours': 0.0, 'chunk_statistics_auto_exit_target_unique_chunks': 0, 'chunk_statistics_strategy': 'memory_bloom_filter', 'enable_kv_events': False, 'use_gpu_connector_v3': False, 'pin_timeout_sec': 300, 'pin_check_interval_sec': 30, 'remote_config_url': None, 'app_id': None, 'enable_hidden_state_cache': False, 'max_hidden_state_cpu_size': 2.0, 'hidden_state_layers': None, 'hidden_states_retrieve_mode': 'prefix_strict'} [3m(cache_engine.py:109:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,241] LMCache INFO:[0m LMCacheWorker is not initialized (related configs: enable_controller: False, role: worker, worker_id: 0, worker_ids: [0]). [3m(cache_engine.py:159:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,242] LMCache INFO:[0m KV events are disabled. [3m(cache_engine.py:188:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,242] LMCache INFO:[0m PeriodicThread PinMonitor-thread entering main loop (interval=30.0s) [3m(periodic_thread.py:304:lmcache.v1.periodic_thread)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,242] LMCache INFO:[0m Started PeriodicThread: PinMonitor-thread (level=critical, interval=30.0s, init_wait=0.0s) [3m(periodic_thread.py:248:lmcache.v1.periodic_thread)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,242] LMCache INFO:[0m PinMonitor started [3m(pin_monitor.py:223:lmcache.v1.pin_monitor)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:16,497] LMCache WARNING:[0m IPC socket path (118 bytes) exceeds the 107-byte sockaddr_un limit; using shortened path '/home/bumi/infra/tmp/agent-memory-kv-p25/lmcache_rpc_0521c3bfda6c7868' instead of '/home/bumi/infra/tmp/agent-memory-kv-p25/engine_8767dd73-eb0b-4504-a2db-500a9ab988f2_service_lookup_lmcache_rpc_port_0'. [3m(rpc_utils.py:230:lmcache.v1.rpc_utils)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,498] LMCache INFO:[0m lmcache lookup server started [3m(lmcache_lookup_client.py:270:lmcache.v1.lookup_client.lmcache_lookup_client)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:16,498] LMCache WARNING:[0m IPC socket path (121 bytes) exceeds the 107-byte sockaddr_un limit; using shortened path '/home/bumi/infra/tmp/agent-memory-kv-p25/lmcache_rpc_aefeb1e883b4630d' instead of '/home/bumi/infra/tmp/agent-memory-kv-p25/engine_8767dd73-eb0b-4504-a2db-500a9ab988f2_service_offload_lmcache_rpc_port_100'. [3m(rpc_utils.py:230:lmcache.v1.rpc_utils)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,499] LMCache INFO:[0m Internal API server disabled. internal_api_server_enabled=False, port_offset=1, port=7000, socket_path=None, include_index_list=None [3m(api_server.py:67:lmcache.v1.internal_api_server.api_server)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,500] LMCache INFO:[0m Creating blender for vllm-instance [3m(utils.py:38:lmcache.v1.compute.blend.utils)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,520] LMCache INFO:[0m Max Q error: 0.0078125 [3m(positional_encoding.py:129:lmcache.v1.compute.positional_encoding)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,520] LMCache INFO:[0m Max K error: 0.0078125 [3m(positional_encoding.py:130:lmcache.v1.compute.positional_encoding)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,522] LMCache INFO:[0m Max K error (fused): 0.01171875 [3m(positional_encoding.py:143:lmcache.v1.compute.positional_encoding)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,522] LMCache INFO:[0m LMCache initialized for role KVConnectorRole.WORKER with version 0.5.5-g05a013b, vllm version 0.30.0, lmcache cache_engine metadata: LMCacheMetadata(model_name='/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B', world_size=1, local_world_size=1, worker_id=0, local_worker_id=0, kv_dtype=torch.bfloat16, kv_shape=(40, 2, 256, 8, 128), use_mla=False, role='worker', served_model_name='/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B', chunk_size=256, kv_layer_groups_manager=None, engine_id='8767dd73-eb0b-4504-a2db-500a9ab988f2', kv_connector_extra_config={}) [3m(vllm_v1_adapter.py:485:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,526] LMCache INFO:[0m Registering KV caches [3m(vllm_v1_adapter.py:748:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,526] LMCache INFO:[0m Post initializing LMCacheEngine [3m(cache_engine.py:303:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,526] LMCache INFO:[0m Initialize storage manager on rank 0, use layerwise: True,save only first rank: False [3m(cache_engine.py:315:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,527] LMCache INFO:[0m Initializing LRUCachePolicy [3m(lru.py:22:lmcache.v1.storage_backend.cache_policy.lru)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:16,527] LMCache INFO:[0m NUMA mapping None [3m(local_cpu_backend.py:380:lmcache.v1.storage_backend.local_cpu_backend)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:22,605] LMCache WARNING:[0m Controller message sender is not initialized [3m(local_cpu_backend.py:105:lmcache.v1.storage_backend.local_cpu_backend)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:22,606] LMCache INFO:[0m Created backend: LocalCPUBackend (LocalCPUBackend) [3m(storage_manager.py:1298:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:22,609] LMCache INFO:[0m No active health checks to monitor, skipping monitor thread [3m(base.py:508:lmcache.v1.health_monitor.base)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:22,609] LMCache INFO:[0m Health monitor initialized and started [3m(base_service_factory.py:126:lmcache.integration.base_service_factory)[0m
+(EngineCore pid=695565) <frozen importlib._bootstrap_external>:1184: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(EngineCore pid=695565) <frozen importlib._bootstrap_external>:1184: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(EngineCore pid=695565) INFO 10-10 13:37:23 [kernel_warmup.py:172] JIT kernel warmup starting.
+(EngineCore pid=695565) JIT kernel warmup (69 compile keys):   0%|          | 0/5 [00:00<?, ?kernel/s]JIT kernel warmup (69 compile keys): 100%|██████████| 5/5 [00:00<00:00, 65.47kernel/s, ComputeSlotMappingKernel (1 keys)]
+(EngineCore pid=695565) INFO 10-10 13:37:23 [kernel_warmup.py:185] JIT kernel warmup finished in 0.09s.
+(EngineCore pid=695565) INFO 10-10 13:37:23 [gpu_worker.py:904] Free memory on device (94.91/95.22 GiB) on startup. Desired GPU memory utilization is (0.5, 47.61 GiB). Actual usage is 28.12 GiB for consumed memory (weights + non-torch), 4.43 GiB for peak activation, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=16018028544` (14.92 GiB) to fit into requested memory, or `--kv-cache-memory=66801809408` (62.21 GiB) to fully utilize gpu memory. Current kv cache memory in use is 15.06 GiB.
+(EngineCore pid=695565) INFO 10-10 13:37:24 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(EngineCore pid=695565) WARNING 10-10 13:37:24 [torch_utils.py:275] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(EngineCore pid=695565) INFO 10-10 13:37:24 [core.py:379] init engine (profile, create kv cache, warmup model) took 16.75 s
+(EngineCore pid=695565) INFO 10-10 13:37:24 [factory.py:62] Creating v1 connector with name: LMCacheConnectorV1 and engine_id: 8767dd73-eb0b-4504-a2db-500a9ab988f2
+(EngineCore pid=695565) WARNING 10-10 13:37:24 [base.py:217] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
+(EngineCore pid=695565) INFO 10-10 13:37:24 [lmcache_connector.py:105] Initializing latest dev LMCache connector
+(EngineCore pid=695565) 
+(EngineCore pid=695565)  _     __  __    ____           _          
+(EngineCore pid=695565) | |   |  \/  |  / ___|__ _  ___| |__   ___      LMCache v0.5.5 (g05a013b)
+(EngineCore pid=695565) | |   | |\/| | | |   / _` |/ __| '_ \ / _ \     Website:  https://lmcache.ai/
+(EngineCore pid=695565) | |___| |  | | | |__| (_| | (__| | | |  __/     Recipes:  https://docs.lmcache.ai/recipes
+(EngineCore pid=695565) |_____|_|  |_|  \____\__,_|\___|_| |_|\___|     LinkedIn: https://www.linkedin.com/company/lmcache-lab
+(EngineCore pid=695565) Set LMCACHE_DISABLE_BANNER=1 to hide this banner.
+(EngineCore pid=695565) 
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,553] LMCache INFO:[0m num_layer: 40, chunk_size: 256, num_kv_head (per gpu): 8, head_size: 128, hidden_dim (D) for KV (per gpu): 1024, use mla: False, kv shape: (40, 2, 256, 8, 128), num_draft_layers: 0 [3m(vllm_service_factory.py:111:lmcache.integration.vllm.vllm_service_factory)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:24,554] LMCache WARNING:[0m IPC socket path (118 bytes) exceeds the 107-byte sockaddr_un limit; using shortened path '/home/bumi/infra/tmp/agent-memory-kv-p25/lmcache_rpc_0521c3bfda6c7868' instead of '/home/bumi/infra/tmp/agent-memory-kv-p25/engine_8767dd73-eb0b-4504-a2db-500a9ab988f2_service_lookup_lmcache_rpc_port_0'. [3m(rpc_utils.py:230:lmcache.v1.rpc_utils)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,554] LMCache INFO:[0m Transport connecting to rank 0 with socket path /home/bumi/infra/tmp/agent-memory-kv-p25/lmcache_rpc_0521c3bfda6c7868 [3m(zmq_transport.py:53:lmcache.v1.rpc.zmq_transport)[0m
+(EngineCore pid=695565) [33;20m[2026-10-10 13:37:24,554] LMCache WARNING:[0m Could not load 'builtin' from vLLM. Using builtin hash. This may cause inconsistencies in distributed caching. [3m(token_database.py:162:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,554] LMCache INFO:[0m Initialized NONE_HASH=5142730886103928707 from vLLM (>= PR#20511) [3m(token_database.py:100:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,555] LMCache INFO:[0m Using hash algorithm: builtin [3m(token_database.py:110:lmcache.v1.token_database)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,796] LMCache INFO:[0m Internal API server disabled. internal_api_server_enabled=False, port_offset=0, port=6999, socket_path=None, include_index_list=None [3m(api_server.py:67:lmcache.v1.internal_api_server.api_server)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:24,797] LMCache INFO:[0m LMCache initialized for role KVConnectorRole.SCHEDULER with version 0.5.5-g05a013b, vllm version 0.30.0, lmcache cache_engine metadata: None [3m(vllm_v1_adapter.py:485:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:24 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-10 13:37:25 [hf.py:642] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,202] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,215] LMCache INFO:[0m Reqid: 0-bafdc79c, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,241] LMCache INFO:[0m Lazily initializing GPU buffer. [3m(gpu_connectors.py:752:lmcache.v1.gpu_connector.gpu_connectors)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,241] LMCache INFO:[0m Engine KV Format: EngineKVFormat.NL_X_NB_BS_NH_CS NL x [NB, BS, NH, CS] [3m(detection.py:69:lmcache.v1.gpu_connector.kv_format.detection)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,241] LMCache INFO:[0m Lazily initializing GPU buffer (max tokens=98720). [3m(gpu_connectors.py:769:lmcache.v1.gpu_connector.gpu_connectors)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,555] LMCache INFO:[0m [req_id=0-bafdc79c] Stored 1221 out of total 1270 tokens. size: 0.1863 GB, cost 314.9998 ms, throughput: 0.5915 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,655] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,659] LMCache INFO:[0m Reqid: 1-8abae0f5, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,660] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,777] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,898] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:25 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,903] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:25 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,904] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:25,906] LMCache INFO:[0m Reqid: 2-b165ea7f, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,183] LMCache INFO:[0m [req_id=2-b165ea7f] Stored 1221 out of total 1270 tokens. size: 0.1863 GB, cost 271.9877 ms, throughput: 0.6850 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,283] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,286] LMCache INFO:[0m Reqid: 3-9e679cdf, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,288] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,366] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,478] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,482] LMCache INFO:[0m Reqid: 4-b15fb748, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,483] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,563] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,675] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,679] LMCache INFO:[0m Reqid: 5-a75daac9, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,680] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,760] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,876] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,879] LMCache INFO:[0m Reqid: 6-b3b0b0cb, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,881] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:26,961] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,072] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:27 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,076] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,079] LMCache INFO:[0m Reqid: 7-a38e2b3a, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,355] LMCache INFO:[0m [req_id=7-a38e2b3a] Stored 1221 out of total 1270 tokens. size: 0.1863 GB, cost 271.4452 ms, throughput: 0.6864 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,450] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,453] LMCache INFO:[0m Reqid: 8-8caf19cf, Total tokens 1308, Inference Engine computed tokens: 0, LMCache hit tokens: 1269, need to load: 1269 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,454] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,725] LMCache INFO:[0m [req_id=unspecified] Retrieved 153 out of 1269 out of total 1269 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,839] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,842] LMCache INFO:[0m Reqid: 9-b96b1968, Total tokens 1346, Inference Engine computed tokens: 0, LMCache hit tokens: 1307, need to load: 1307 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:27,844] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,129] LMCache INFO:[0m [req_id=unspecified] Retrieved 153 out of 1307 out of total 1307 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,242] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,245] LMCache INFO:[0m Reqid: 10-bb9f82e9, Total tokens 1384, Inference Engine computed tokens: 0, LMCache hit tokens: 1345, need to load: 1345 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,246] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,530] LMCache INFO:[0m [req_id=unspecified] Retrieved 153 out of 1345 out of total 1345 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,643] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,646] LMCache INFO:[0m Reqid: 11-a8481934, Total tokens 1422, Inference Engine computed tokens: 0, LMCache hit tokens: 1383, need to load: 1383 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,648] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:28,935] LMCache INFO:[0m [req_id=unspecified] Retrieved 153 out of 1383 out of total 1383 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,047] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:29 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,052] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,054] LMCache INFO:[0m Reqid: 12-9616aff1, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,330] LMCache INFO:[0m [req_id=12-9616aff1] Stored 1221 out of total 1270 tokens. size: 0.1863 GB, cost 271.5466 ms, throughput: 0.6861 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,426] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,429] LMCache INFO:[0m Reqid: 13-8d1ae867, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,431] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,510] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,623] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,627] LMCache INFO:[0m Reqid: 14-afa76e29, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,628] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,707] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,820] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,824] LMCache INFO:[0m Reqid: 15-bba087c2, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,825] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:29,900] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,012] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,016] LMCache INFO:[0m Reqid: 16-84cc6231, Total tokens 1270, Inference Engine computed tokens: 0, LMCache hit tokens: 1231, need to load: 1231 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,017] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,092] LMCache INFO:[0m [req_id=unspecified] Retrieved 1221 out of 1231 out of total 1231 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a0-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,204] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:30 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,208] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,210] LMCache INFO:[0m Reqid: 17-a709b8f8, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,568] LMCache INFO:[0m [req_id=17-a709b8f8] Stored 1602 out of total 1651 tokens. size: 0.2444 GB, cost 352.7432 ms, throughput: 0.6930 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,664] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,668] LMCache INFO:[0m Reqid: 18-bbefabdd, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1504, need to load: 1504 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,669] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,772] LMCache INFO:[0m [req_id=unspecified] Retrieved 1388 out of 1504 out of total 1504 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,896] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,899] LMCache INFO:[0m Reqid: 19-b9364490, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1504, need to load: 1504 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:30,900] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,023] LMCache INFO:[0m [req_id=unspecified] Retrieved 1280 out of 1504 out of total 1504 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,138] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,141] LMCache INFO:[0m Reqid: 20-a30ba26d, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1504, need to load: 1504 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,143] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,279] LMCache INFO:[0m [req_id=unspecified] Retrieved 1174 out of 1504 out of total 1504 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,393] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,396] LMCache INFO:[0m Reqid: 21-8cf3d7a7, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,397] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,477] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,689] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:31 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,694] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:31,696] LMCache INFO:[0m Reqid: 22-b8921410, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,050] LMCache INFO:[0m [req_id=22-b8921410] Stored 1602 out of total 1651 tokens. size: 0.2444 GB, cost 348.4637 ms, throughput: 0.7015 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,146] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,148] LMCache INFO:[0m Reqid: 23-9d0dfcc9, Total tokens 1689, Inference Engine computed tokens: 0, LMCache hit tokens: 1542, need to load: 1542 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,150] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,442] LMCache INFO:[0m [req_id=unspecified] Retrieved 320 out of 1542 out of total 1542 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,557] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,559] LMCache INFO:[0m Reqid: 24-9d02a35f, Total tokens 1727, Inference Engine computed tokens: 0, LMCache hit tokens: 1580, need to load: 1580 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,561] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,874] LMCache INFO:[0m [req_id=unspecified] Retrieved 212 out of 1580 out of total 1580 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,987] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,990] LMCache INFO:[0m Reqid: 25-bc8e8e36, Total tokens 1765, Inference Engine computed tokens: 0, LMCache hit tokens: 1618, need to load: 1618 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:32,991] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,334] LMCache INFO:[0m [req_id=unspecified] Retrieved 106 out of 1618 out of total 1618 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,449] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,451] LMCache INFO:[0m Reqid: 26-a0311f05, Total tokens 1803, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,839] LMCache INFO:[0m [req_id=26-a0311f05] Stored 1754 out of total 1803 tokens. size: 0.2676 GB, cost 382.5078 ms, throughput: 0.6997 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,935] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:33 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,942] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:33,944] LMCache INFO:[0m Reqid: 27-b1e1985c, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,297] LMCache INFO:[0m [req_id=27-b1e1985c] Stored 1602 out of total 1651 tokens. size: 0.2444 GB, cost 348.1736 ms, throughput: 0.7021 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,396] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,400] LMCache INFO:[0m Reqid: 28-b55303e8, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1612, need to load: 1612 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,401] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,522] LMCache INFO:[0m [req_id=unspecified] Retrieved 1388 out of 1612 out of total 1612 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,635] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,638] LMCache INFO:[0m Reqid: 29-a1080e85, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1504, need to load: 1504 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,640] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,757] LMCache INFO:[0m [req_id=unspecified] Retrieved 1280 out of 1504 out of total 1504 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,871] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,874] LMCache INFO:[0m Reqid: 30-8bfaa5c2, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1286, need to load: 1286 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,875] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:34,977] LMCache INFO:[0m [req_id=unspecified] Retrieved 1174 out of 1286 out of total 1286 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,144] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,146] LMCache INFO:[0m Reqid: 31-98c49125, Total tokens 1651, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,148] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,218] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a1-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,428] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:35 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,433] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:35,435] LMCache INFO:[0m Reqid: 32-858207f7, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,102] LMCache INFO:[0m [req_id=32-858207f7] Stored 3141 out of total 3190 tokens. size: 0.4793 GB, cost 659.2190 ms, throughput: 0.7270 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:37:36 [loggers.py:315] Engine 000: Avg prompt throughput: 1602.3 tokens/s, Avg generation throughput: 14.2 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 3.2%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 64.0%
+{"arm": "blend", "request": "calibration-s1709-a2-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,200] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,203] LMCache INFO:[0m Reqid: 33-94b90d0e, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1902, need to load: 1902 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,205] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,382] LMCache INFO:[0m [req_id=unspecified] Retrieved 1483 out of 1902 out of total 1902 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,744] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,747] LMCache INFO:[0m Reqid: 34-80fb3e08, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,749] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:36,816] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,345] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,348] LMCache INFO:[0m Reqid: 35-9478ac69, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,350] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,417] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,947] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,950] LMCache INFO:[0m Reqid: 36-a9625e3d, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:37,952] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:38,019] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:38,547] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:38 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:38,551] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:38,554] LMCache INFO:[0m Reqid: 37-90e937f7, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:39,218] LMCache INFO:[0m [req_id=37-90e937f7] Stored 3141 out of total 3190 tokens. size: 0.4793 GB, cost 657.3401 ms, throughput: 0.7291 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:39,316] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:39,319] LMCache INFO:[0m Reqid: 38-913d7032, Total tokens 3228, Inference Engine computed tokens: 0, LMCache hit tokens: 1940, need to load: 1940 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:39,321] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:39,673] LMCache INFO:[0m [req_id=unspecified] Retrieved 415 out of 1940 out of total 1940 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,035] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,038] LMCache INFO:[0m Reqid: 39-982cae49, Total tokens 3266, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,732] LMCache INFO:[0m [req_id=39-982cae49] Stored 3217 out of total 3266 tokens. size: 0.4909 GB, cost 687.3796 ms, throughput: 0.7141 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,830] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,833] LMCache INFO:[0m Reqid: 40-a4357163, Total tokens 3304, Inference Engine computed tokens: 0, LMCache hit tokens: 2849, need to load: 2849 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:40,835] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:41,371] LMCache INFO:[0m [req_id=unspecified] Retrieved 414 out of 2849 out of total 2849 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:41,562] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:41,565] LMCache INFO:[0m Reqid: 41-a5e25917, Total tokens 3342, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:42,270] LMCache INFO:[0m [req_id=41-a5e25917] Stored 3293 out of total 3342 tokens. size: 0.5025 GB, cost 697.8500 ms, throughput: 0.7200 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:42,367] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:42 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:42,376] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:42,379] LMCache INFO:[0m Reqid: 42-b44c7449, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,044] LMCache INFO:[0m [req_id=42-b44c7449] Stored 3141 out of total 3190 tokens. size: 0.4793 GB, cost 657.6804 ms, throughput: 0.7287 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,144] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,147] LMCache INFO:[0m Reqid: 43-90474bce, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 2734, need to load: 2734 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,149] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,484] LMCache INFO:[0m [req_id=unspecified] Retrieved 1483 out of 2734 out of total 2734 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,669] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,672] LMCache INFO:[0m Reqid: 44-94764216, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,673] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:43,740] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,269] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,272] LMCache INFO:[0m Reqid: 45-b5063b9b, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,273] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,340] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,870] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,873] LMCache INFO:[0m Reqid: 46-8de3417f, Total tokens 3190, Inference Engine computed tokens: 0, LMCache hit tokens: 1068, need to load: 1068 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,875] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:44,941] LMCache INFO:[0m [req_id=unspecified] Retrieved 1068 out of 1068 out of total 1068 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a2-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:45,470] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:45 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:45,474] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:45,477] LMCache INFO:[0m Reqid: 47-839c1c44, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,585] LMCache INFO:[0m [req_id=47-839c1c44] Stored 5185 out of total 5234 tokens. size: 0.7912 GB, cost 1098.1827 ms, throughput: 0.7204 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:37:46 [loggers.py:315] Engine 000: Avg prompt throughput: 3284.5 tokens/s, Avg generation throughput: 7.2 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 5.3%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 47.7%
+{"arm": "blend", "request": "calibration-s1709-a3-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,684] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,689] LMCache INFO:[0m Reqid: 48-b373061f, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,691] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,884] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:46,997] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,002] LMCache INFO:[0m Reqid: 49-a1b6eb4b, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,004] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,196] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,308] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,313] LMCache INFO:[0m Reqid: 50-a192932b, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,315] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,507] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,621] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,626] LMCache INFO:[0m Reqid: 51-b8e1a7fd, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,628] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,820] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,933] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:47 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,937] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:47,941] LMCache INFO:[0m Reqid: 52-b9fd62f6, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,049] LMCache INFO:[0m [req_id=52-b9fd62f6] Stored 5185 out of total 5234 tokens. size: 0.7912 GB, cost 1098.8177 ms, throughput: 0.7200 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,149] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,154] LMCache INFO:[0m Reqid: 53-b76b65fa, Total tokens 5272, Inference Engine computed tokens: 0, LMCache hit tokens: 5233, need to load: 5233 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,156] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,535] LMCache INFO:[0m [req_id=unspecified] Retrieved 4117 out of 5233 out of total 5233 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,653] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,658] LMCache INFO:[0m Reqid: 54-91e72328, Total tokens 5310, Inference Engine computed tokens: 0, LMCache hit tokens: 5271, need to load: 5271 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:49,660] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,043] LMCache INFO:[0m [req_id=unspecified] Retrieved 4117 out of 5271 out of total 5271 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,157] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,162] LMCache INFO:[0m Reqid: 55-ae33a970, Total tokens 5348, Inference Engine computed tokens: 0, LMCache hit tokens: 5309, need to load: 5309 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,164] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,554] LMCache INFO:[0m [req_id=unspecified] Retrieved 4117 out of 5309 out of total 5309 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,668] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,673] LMCache INFO:[0m Reqid: 56-a0d79404, Total tokens 5386, Inference Engine computed tokens: 0, LMCache hit tokens: 5347, need to load: 5347 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:50,675] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:51,072] LMCache INFO:[0m [req_id=unspecified] Retrieved 4117 out of 5347 out of total 5347 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:51,187] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:51 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:51,191] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:51,194] LMCache INFO:[0m Reqid: 57-9abccb26, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,302] LMCache INFO:[0m [req_id=57-9abccb26] Stored 5185 out of total 5234 tokens. size: 0.7912 GB, cost 1098.4549 ms, throughput: 0.7203 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,402] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,407] LMCache INFO:[0m Reqid: 58-a0d958f7, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,409] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,590] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,704] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,708] LMCache INFO:[0m Reqid: 59-ad1cb2ab, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,710] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:52,898] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,012] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,017] LMCache INFO:[0m Reqid: 60-af846286, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,019] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,205] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,318] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,322] LMCache INFO:[0m Reqid: 61-90706aae, Total tokens 5234, Inference Engine computed tokens: 0, LMCache hit tokens: 5195, need to load: 5195 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,324] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,509] LMCache INFO:[0m [req_id=unspecified] Retrieved 5185 out of 5195 out of total 5195 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a3-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,622] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:53 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,626] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:53,630] LMCache INFO:[0m Reqid: 62-8f4a9e9f, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:54,969] LMCache INFO:[0m [req_id=62-8f4a9e9f] Stored 6213 out of total 6262 tokens. size: 0.9480 GB, cost 1324.9845 ms, throughput: 0.7155 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,073] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,079] LMCache INFO:[0m Reqid: 63-8f079125, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 5807, need to load: 5807 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,081] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,377] LMCache INFO:[0m [req_id=unspecified] Retrieved 5384 out of 5807 out of total 5807 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,570] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,575] LMCache INFO:[0m Reqid: 64-bee4413c, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 5807, need to load: 5807 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,576] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:55,951] LMCache INFO:[0m [req_id=unspecified] Retrieved 4969 out of 5807 out of total 5807 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,146] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,151] LMCache INFO:[0m Reqid: 65-9d8646f7, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 5807, need to load: 5807 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,153] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,610] LMCache INFO:[0m [req_id=unspecified] Retrieved 4554 out of 5807 out of total 5807 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:37:56 [loggers.py:315] Engine 000: Avg prompt throughput: 1834.6 tokens/s, Avg generation throughput: 8.9 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 6.4%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 64.3%
+{"arm": "blend", "request": "calibration-s1709-a4-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,803] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,808] LMCache INFO:[0m Reqid: 66-ae0f79eb, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,809] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:56,964] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:57,534] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:37:57 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:57,539] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:57,543] LMCache INFO:[0m Reqid: 67-b4a3db2c, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:58,878] LMCache INFO:[0m [req_id=67-b4a3db2c] Stored 6213 out of total 6262 tokens. size: 0.9480 GB, cost 1323.8957 ms, throughput: 0.7161 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:58,982] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:58,987] LMCache INFO:[0m Reqid: 68-9b5194fc, Total tokens 6300, Inference Engine computed tokens: 0, LMCache hit tokens: 5845, need to load: 5845 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:37:58,989] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:00,026] LMCache INFO:[0m [req_id=unspecified] Retrieved 1244 out of 5845 out of total 5845 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:00,221] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:00,226] LMCache INFO:[0m Reqid: 69-b1aeb664, Total tokens 6338, Inference Engine computed tokens: 0, LMCache hit tokens: 5883, need to load: 5883 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:00,228] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:01,360] LMCache INFO:[0m [req_id=unspecified] Retrieved 829 out of 5883 out of total 5883 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:01,556] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:01,561] LMCache INFO:[0m Reqid: 70-82e31442, Total tokens 6376, Inference Engine computed tokens: 0, LMCache hit tokens: 5921, need to load: 5921 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:01,563] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:02,777] LMCache INFO:[0m [req_id=unspecified] Retrieved 414 out of 5921 out of total 5921 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:02,972] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:02,976] LMCache INFO:[0m Reqid: 71-970ffb26, Total tokens 6414, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:04,354] LMCache INFO:[0m [req_id=71-970ffb26] Stored 6365 out of total 6414 tokens. size: 0.9712 GB, cost 1365.8417 ms, throughput: 0.7111 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:04,459] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:04 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:04,466] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:04,470] LMCache INFO:[0m Reqid: 72-970883d9, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:05,806] LMCache INFO:[0m [req_id=72-970883d9] Stored 6213 out of total 6262 tokens. size: 0.9480 GB, cost 1324.9122 ms, throughput: 0.7155 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:05,910] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:05,915] LMCache INFO:[0m Reqid: 73-853096f0, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 6223, need to load: 6223 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:05,917] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:06,303] LMCache INFO:[0m [req_id=unspecified] Retrieved 5384 out of 6223 out of total 6223 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:06,418] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:06,423] LMCache INFO:[0m Reqid: 74-a41dbaf9, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 6223, need to load: 6223 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:06,425] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:06,890] LMCache INFO:[0m [req_id=unspecified] Retrieved 4969 out of 6223 out of total 6223 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:38:06 [loggers.py:315] Engine 000: Avg prompt throughput: 2205.9 tokens/s, Avg generation throughput: 4.4 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 6.4%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 63.4%
+{"arm": "blend", "request": "calibration-s1709-a4-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,005] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,009] LMCache INFO:[0m Reqid: 75-b7f56bd1, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 4556, need to load: 4556 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,011] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,178] LMCache INFO:[0m [req_id=unspecified] Retrieved 4554 out of 4556 out of total 4556 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,657] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,661] LMCache INFO:[0m Reqid: 76-aaae35c1, Total tokens 6262, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,663] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:07,815] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a4-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:08,386] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:08 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:08,391] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:08,396] LMCache INFO:[0m Reqid: 77-9e7d3741, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:10,705] LMCache INFO:[0m [req_id=77-9e7d3741] Stored 10309 out of total 10358 tokens. size: 1.5730 GB, cost 2288.7149 ms, throughput: 0.6873 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:10,826] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:10,833] LMCache INFO:[0m Reqid: 78-814067b0, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 9903, need to load: 9903 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:10,835] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:11,278] LMCache INFO:[0m [req_id=unspecified] Retrieved 9480 out of 9903 out of total 9903 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:11,483] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:11,489] LMCache INFO:[0m Reqid: 79-b8b5c1fe, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 9903, need to load: 9903 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:11,491] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:12,027] LMCache INFO:[0m [req_id=unspecified] Retrieved 9065 out of 9903 out of total 9903 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:12,233] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:12,239] LMCache INFO:[0m Reqid: 80-94b2be03, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 9903, need to load: 9903 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:12,241] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:12,862] LMCache INFO:[0m [req_id=unspecified] Retrieved 8650 out of 9903 out of total 9903 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:13,068] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:13,074] LMCache INFO:[0m Reqid: 81-bca2fca6, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 8236, need to load: 8236 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:13,076] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:13,370] LMCache INFO:[0m [req_id=unspecified] Retrieved 8236 out of 8236 out of total 8236 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:13,996] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:14 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:14,000] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:14,006] LMCache INFO:[0m Reqid: 82-8c812c3c, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:16,313] LMCache INFO:[0m [req_id=82-8c812c3c] Stored 10309 out of total 10358 tokens. size: 1.5730 GB, cost 2287.9050 ms, throughput: 0.6875 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:16,435] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:16,441] LMCache INFO:[0m Reqid: 83-8a0169b4, Total tokens 10396, Inference Engine computed tokens: 0, LMCache hit tokens: 9941, need to load: 9941 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:16,444] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:18,453] LMCache INFO:[0m [req_id=unspecified] Retrieved 1244 out of 9941 out of total 9941 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:38:18 [loggers.py:315] Engine 000: Avg prompt throughput: 2443.8 tokens/s, Avg generation throughput: 3.9 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 10.5%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 64.2%
+{"arm": "blend", "request": "calibration-s1709-a5-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:18,660] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:18,666] LMCache INFO:[0m Reqid: 84-855dcf85, Total tokens 10434, Inference Engine computed tokens: 0, LMCache hit tokens: 9979, need to load: 9979 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:18,668] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:20,765] LMCache INFO:[0m [req_id=unspecified] Retrieved 829 out of 9979 out of total 9979 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:20,972] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:20,978] LMCache INFO:[0m Reqid: 85-aec6a518, Total tokens 10472, Inference Engine computed tokens: 0, LMCache hit tokens: 10017, need to load: 10017 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:20,980] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:23,164] LMCache INFO:[0m [req_id=unspecified] Retrieved 414 out of 10017 out of total 10017 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:23,373] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:23,378] LMCache INFO:[0m Reqid: 86-a8d19f62, Total tokens 10510, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:25,724] LMCache INFO:[0m [req_id=86-a8d19f62] Stored 10461 out of total 10510 tokens. size: 1.5962 GB, cost 2325.5902 ms, throughput: 0.6864 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:25,847] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:25 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:25,854] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:25,860] LMCache INFO:[0m Reqid: 87-84ca8f85, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,170] LMCache INFO:[0m [req_id=87-84ca8f85] Stored 10309 out of total 10358 tokens. size: 1.5730 GB, cost 2290.5948 ms, throughput: 0.6867 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,291] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,298] LMCache INFO:[0m Reqid: 88-9552c038, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 10319, need to load: 10319 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,300] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,849] LMCache INFO:[0m [req_id=unspecified] Retrieved 9480 out of 10319 out of total 10319 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:38:28 [loggers.py:315] Engine 000: Avg prompt throughput: 2117.4 tokens/s, Avg generation throughput: 2.4 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 10.5%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 63.4%
+{"arm": "blend", "request": "calibration-s1709-a5-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,964] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,970] LMCache INFO:[0m Reqid: 89-aa6b4b01, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 9902, need to load: 9902 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:28,972] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:29,513] LMCache INFO:[0m [req_id=unspecified] Retrieved 9065 out of 9902 out of total 9902 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:29,719] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:29,725] LMCache INFO:[0m Reqid: 90-b38a835f, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 9902, need to load: 9902 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:29,727] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:30,357] LMCache INFO:[0m [req_id=unspecified] Retrieved 8650 out of 9902 out of total 9902 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:30,563] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:30,568] LMCache INFO:[0m Reqid: 91-91b6d0a9, Total tokens 10358, Inference Engine computed tokens: 0, LMCache hit tokens: 8236, need to load: 8236 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:30,571] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:30,865] LMCache INFO:[0m [req_id=unspecified] Retrieved 8236 out of 8236 out of total 8236 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a5-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:31,489] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:31 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:31,493] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:31,507] LMCache INFO:[0m Reqid: 92-b8a29d96, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:36,039] LMCache INFO:[0m [req_id=92-b8a29d96] Stored 18501 out of total 18550 tokens. size: 2.8230 GB, cost 4488.0366 ms, throughput: 0.6290 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:36,190] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:36,199] LMCache INFO:[0m Reqid: 93-af889106, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18095, need to load: 18095 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:36,202] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:36,953] LMCache INFO:[0m [req_id=unspecified] Retrieved 17672 out of 18095 out of total 18095 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:37,182] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:37,190] LMCache INFO:[0m Reqid: 94-9e634e83, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18095, need to load: 18095 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:37,193] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:38,042] LMCache INFO:[0m [req_id=unspecified] Retrieved 17257 out of 18095 out of total 18095 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:38,272] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:38,281] LMCache INFO:[0m Reqid: 95-a023176d, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18095, need to load: 18095 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:38,283] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:39,234] LMCache INFO:[0m [req_id=unspecified] Retrieved 16842 out of 18095 out of total 18095 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:38:39 [loggers.py:315] Engine 000: Avg prompt throughput: 2185.2 tokens/s, Avg generation throughput: 3.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 18.8%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 66.5%
+{"arm": "blend", "request": "calibration-s1709-a6-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:39,464] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:39,472] LMCache INFO:[0m Reqid: 96-9626cfdf, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 16428, need to load: 16428 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:39,474] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:40,030] LMCache INFO:[0m [req_id=unspecified] Retrieved 16428 out of 16428 out of total 16428 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:40,762] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:38:40 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:40,766] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:40,774] LMCache INFO:[0m Reqid: 97-b3e8a849, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:45,304] LMCache INFO:[0m [req_id=97-b3e8a849] Stored 18501 out of total 18550 tokens. size: 2.8230 GB, cost 4486.7075 ms, throughput: 0.6292 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:45,452] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:45,462] LMCache INFO:[0m Reqid: 98-9604dcf3, Total tokens 18588, Inference Engine computed tokens: 0, LMCache hit tokens: 18133, need to load: 18133 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:45,465] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:49,683] LMCache INFO:[0m [req_id=unspecified] Retrieved 1244 out of 18133 out of total 18133 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:38:49 [loggers.py:315] Engine 000: Avg prompt throughput: 2021.8 tokens/s, Avg generation throughput: 1.4 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 18.8%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 66.1%
+{"arm": "blend", "request": "calibration-s1709-a6-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:49,917] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:49,926] LMCache INFO:[0m Reqid: 99-91ea610d, Total tokens 18626, Inference Engine computed tokens: 0, LMCache hit tokens: 18171, need to load: 18171 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:49,929] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:54,260] LMCache INFO:[0m [req_id=unspecified] Retrieved 829 out of 18171 out of total 18171 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:54,491] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:54,499] LMCache INFO:[0m Reqid: 100-9951e310, Total tokens 18664, Inference Engine computed tokens: 0, LMCache hit tokens: 18209, need to load: 18209 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:54,502] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:58,962] LMCache INFO:[0m [req_id=unspecified] Retrieved 414 out of 18209 out of total 18209 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:59,194] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:38:59,203] LMCache INFO:[0m Reqid: 101-9c20b401, Total tokens 18702, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:03,779] LMCache INFO:[0m [req_id=101-9c20b401] Stored 18653 out of total 18702 tokens. size: 2.8462 GB, cost 4532.3924 ms, throughput: 0.6280 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:39:03 [loggers.py:315] Engine 000: Avg prompt throughput: 1399.4 tokens/s, Avg generation throughput: 1.1 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 18.9%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 66.0%
+{"arm": "blend", "request": "calibration-s1709-a6-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:03,929] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:39:03 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:03,936] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:03,944] LMCache INFO:[0m Reqid: 102-be7c902b, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:08,474] LMCache INFO:[0m [req_id=102-be7c902b] Stored 18501 out of total 18550 tokens. size: 2.8230 GB, cost 4486.5461 ms, throughput: 0.6292 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:08,622] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:08,631] LMCache INFO:[0m Reqid: 103-9a763979, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18511, need to load: 18511 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:08,634] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:09,592] LMCache INFO:[0m [req_id=unspecified] Retrieved 17672 out of 18511 out of total 18511 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:09,707] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:09,715] LMCache INFO:[0m Reqid: 104-8bf8059e, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18511, need to load: 18511 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:09,718] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:10,761] LMCache INFO:[0m [req_id=unspecified] Retrieved 17257 out of 18511 out of total 18511 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:10,877] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:10,885] LMCache INFO:[0m Reqid: 105-87ea82b3, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 18511, need to load: 18511 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:10,888] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:12,047] LMCache INFO:[0m [req_id=unspecified] Retrieved 16842 out of 18511 out of total 18511 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:12,164] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:12,172] LMCache INFO:[0m Reqid: 106-b9f2b2a5, Total tokens 18550, Inference Engine computed tokens: 0, LMCache hit tokens: 16428, need to load: 16428 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:12,175] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:12,730] LMCache INFO:[0m [req_id=unspecified] Retrieved 16428 out of 16428 out of total 16428 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a6-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:13,462] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:39:13 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:13,467] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:13,472] LMCache INFO:[0m Reqid: 107-b19a22df, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:15,274] LMCache INFO:[0m [req_id=107-b19a22df] Stored 8257 out of total 8306 tokens. size: 1.2599 GB, cost 1786.7786 ms, throughput: 0.7051 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:39:15 [loggers.py:315] Engine 000: Avg prompt throughput: 2539.7 tokens/s, Avg generation throughput: 2.6 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 8.4%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 66.7%
+{"arm": "blend", "request": "calibration-s1709-a7-stable_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:15,385] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:15,390] LMCache INFO:[0m Reqid: 108-9a5b2164, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:15,392] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:15,543] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-stable_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:16,589] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:16,594] LMCache INFO:[0m Reqid: 109-b14b098f, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:16,596] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:16,746] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-stable_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:17,791] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:17,796] LMCache INFO:[0m Reqid: 110-a5dcf44f, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:17,798] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:17,948] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-stable_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:18,993] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:18,998] LMCache INFO:[0m Reqid: 111-99c5a639, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:19,000] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:19,151] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-stable_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:20,196] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:39:20 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:20,201] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:20,205] LMCache INFO:[0m Reqid: 112-aa20af63, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:22,006] LMCache INFO:[0m [req_id=112-aa20af63] Stored 8257 out of total 8306 tokens. size: 1.2599 GB, cost 1785.7770 ms, throughput: 0.7055 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-growing_l1-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:22,118] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:22,122] LMCache INFO:[0m Reqid: 113-903fa421, Total tokens 8344, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:23,930] LMCache INFO:[0m [req_id=113-903fa421] Stored 8295 out of total 8344 tokens. size: 1.2657 GB, cost 1792.1761 ms, throughput: 0.7062 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-growing_l1-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:24,043] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:24,047] LMCache INFO:[0m Reqid: 114-9de11f9d, Total tokens 8382, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:25,876] LMCache INFO:[0m [req_id=114-9de11f9d] Stored 8333 out of total 8382 tokens. size: 1.2715 GB, cost 1813.3324 ms, throughput: 0.7012 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:39:25 [loggers.py:315] Engine 000: Avg prompt throughput: 3932.5 tokens/s, Avg generation throughput: 3.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 8.5%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 63.8%
+{"arm": "blend", "request": "calibration-s1709-a7-growing_l1-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:25,989] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:25,994] LMCache INFO:[0m Reqid: 115-ace54484, Total tokens 8420, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:27,832] LMCache INFO:[0m [req_id=115-ace54484] Stored 8371 out of total 8420 tokens. size: 1.2773 GB, cost 1819.0027 ms, throughput: 0.7022 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-growing_l1-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:27,944] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:27,949] LMCache INFO:[0m Reqid: 116-8270ee58, Total tokens 8458, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:29,809] LMCache INFO:[0m [req_id=116-8270ee58] Stored 8409 out of total 8458 tokens. size: 1.2831 GB, cost 1844.2194 ms, throughput: 0.6957 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-growing_l1-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:29,922] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:39:29 [block_pool.py:854] Successfully reset prefix cache
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:29,936] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:29,940] LMCache INFO:[0m Reqid: 117-b146382b, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 0, need to load: 0 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:31,742] LMCache INFO:[0m [req_id=117-b146382b] Stored 8257 out of total 8306 tokens. size: 1.2599 GB, cost 1786.4133 ms, throughput: 0.7053 GB/s [3m(cache_engine.py:765:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-memory_reorder-0:0", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:31,855] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:31,861] LMCache INFO:[0m Reqid: 118-a46c0a65, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:31,863] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:32,015] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-memory_reorder-0:1", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:33,062] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:33,067] LMCache INFO:[0m Reqid: 119-96274ed5, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:33,069] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:33,219] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-memory_reorder-0:2", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:34,266] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:34,271] LMCache INFO:[0m Reqid: 120-a0b5492b, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:34,273] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:34,423] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+{"arm": "blend", "request": "calibration-s1709-a7-memory_reorder-0:3", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:35,474] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:35,479] LMCache INFO:[0m Reqid: 121-92a8318e, Total tokens 8306, Inference Engine computed tokens: 0, LMCache hit tokens: 4140, need to load: 4140 [3m(vllm_v1_adapter.py:1469:lmcache.integration.vllm.vllm_v1_adapter)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:35,481] LMCache INFO:[0m StorageManager freeze mode set to True [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:35,633] LMCache INFO:[0m [req_id=unspecified] Retrieved 4140 out of 4140 out of total 4140 tokens [3m(cache_engine.py:1136:lmcache.v1.cache_engine)[0m
+INFO 10-10 13:39:36 [loggers.py:315] Engine 000: Avg prompt throughput: 3914.8 tokens/s, Avg generation throughput: 3.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 8.4%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 61.3%
+{"arm": "blend", "request": "calibration-s1709-a7-memory_reorder-0:4", "correct": true}
+(EngineCore pid=695565) [32;20m[2026-10-10 13:39:36,679] LMCache INFO:[0m StorageManager freeze mode set to False [3m(storage_manager.py:872:lmcache.v1.storage_backend.storage_manager)[0m
+(EngineCore pid=695565) INFO 10-10 13:39:36 [block_pool.py:854] Successfully reset prefix cache
+INFO 10-10 13:39:36 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=695565) INFO 10-10 13:39:36 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=695565) INFO 10-10 13:39:36 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=695565) INFO 10-10 13:39:36 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=695565) INFO 10-10 13:39:36 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+WARNING 10-10 13:39:41 [utils.py:652] [shutdown] Process manager: force killing remaining processes count=1
+WARNING 10-10 13:39:41 [utils.py:657] [shutdown] Process manager: force killing remaining process EngineCore pid 695565

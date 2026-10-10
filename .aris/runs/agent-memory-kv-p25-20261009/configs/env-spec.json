@@ -1,0 +1,32 @@
+{
+  "base_runtime": "/home/bumi/infra/runtime/nonprefix-kv-p1p2-20261008",
+  "runtime": "/home/bumi/infra/runtime/agent-memory-kv-p25-20261009",
+  "source_isolation": "copy without hardlinks; separate LMCache source; original untouched",
+  "candidate": {
+    "vllm": "0.30.0+cu129",
+    "torch": "2.13.0+cu129",
+    "cuda": "12.9",
+    "lmcache": "0.5.5"
+  },
+  "main_model": "/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-8B",
+  "dtype": "bfloat16",
+  "tensor_parallel_size": 1,
+  "gpu_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "gpu_budget_hours": null,
+  "wall_budget_seconds": null,
+  "budget_authorization": "user: GPU利用没有限制，你可以一直用; GPU0-3 scope retained",
+  "enable_thinking": false,
+  "attention_backend": "existing FA3; no kernel changes",
+  "approximate_query_policy": "exclude entire overlapping chunk from lookup/retrieve/store before GPU transfer",
+  "models": {
+    "Qwen3-8B": "36 layers/QK norm; dynamic geometry",
+    "Qwen3-14B": "scale sensitivity",
+    "Qwen3.5-9B": "native strict cache only, no Blend state repair"
+  },
+  "validation_status": "not_ready"
+}

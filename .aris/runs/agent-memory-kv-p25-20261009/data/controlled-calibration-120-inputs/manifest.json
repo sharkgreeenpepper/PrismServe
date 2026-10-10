@@ -1,0 +1,25 @@
+{
+  "requests": 120,
+  "origin_counts": {
+    "synthetic": 120
+  },
+  "split_counts": {
+    "calibration": 120
+  },
+  "model_geometry": {
+    "model_type": "qwen3",
+    "layers": 36,
+    "full_attention_layers": 36,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "hybrid": false
+  },
+  "full_attention_kv_bytes_per_token_bf16": 147456,
+  "hybrid_recurrent_state_bytes": null,
+  "enable_thinking": false,
+  "query_cache_candidate_policy": "reject overlapping chunk before any approximate KV transfer",
+  "real_distribution_measured": false,
+  "GPU_inference_run": false,
+  "quality_result": null,
+  "source": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/data/controlled-calibration-120.jsonl"
+}

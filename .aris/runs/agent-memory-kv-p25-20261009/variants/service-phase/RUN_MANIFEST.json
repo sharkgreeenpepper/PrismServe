@@ -1,0 +1,138 @@
+{
+  "created_utc": "2026-10-10T05:07:21Z",
+  "git_commit": "03a04ccf507848a52229529399dd72237df0bf93",
+  "model": "Qwen3-8B",
+  "model_path": "/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-8B",
+  "model_weights_lock": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/configs/Qwen3-8B-weights.lock.json",
+  "model_weights_lock_sha256": "14f17fa5303786aefc839fc00f3b8fe91938e67e33e3ad5cbd9ba7932e9fa45a",
+  "input_path": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/data/controlled-calibration-120-inputs/paired-inputs.jsonl",
+  "input_sha256": "52d4ddf256273a3973b15133c1fd2626b9522115a308ec77fb48f9c94de594bb",
+  "input_rows": 120,
+  "lmcache_config": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/configs/blend.yaml",
+  "lmcache_config_sha256": "188e8cdec386f87806c55a8aea781ebc1004d742ba2f9348820b966773d5122b",
+  "runtime": {
+    "python": "3.10.12",
+    "torch": "2.13.0+cu129",
+    "vllm": "0.30.0+cu129",
+    "lmcache": "0.5.5",
+    "transformers": "5.17.0"
+  },
+  "source_sha256": {
+    "experiments/agent_memory_kv_service_phase/profile_replay.py": "e8d103d83cc5e5ceb5c16e3659c642d569da4356c75b97fa14ce18943f9940e5",
+    "experiments/agent_memory_kv_service_phase/phase_hooks.py": "f25d7e09cc3f805dde12b3d7cbe7db03e3cb7bbbb8cd5fd889dfe762543f6839",
+    "experiments/agent_memory_kv_service_phase/run_replay.py": "ddcef80c6697b43cbeb78d1cf712b456f63a2ac710377f1f3cfd5bfd1b61339b",
+    "experiments/agent_memory_kv_service_phase/engine_bridge.py": "c775f6e1502038d179b0c6c7c29491a75721cdc00c4ba41ec9bb23bec6effd88",
+    "experiments/agent_memory_kv_service_phase/causal_flash.py": "2ede26263216c88e858f529daa674205306833705f362514e939805bac864a04",
+    "experiments/agent_memory_kv_service_phase/repair_selectors.py": "e27eb26b34f235b34fccf0c5dbc24a5f0d46a01d915f0ab0c2cff0e5bca71c6b",
+    "experiments/agent_memory_kv_service_phase/supervise.py": "7dfc91d6a4c18f47dd5c94d82538ea93bedc6571b67694e063a3e6a8a2f10d0a"
+  },
+  "device_policy": {
+    "physical_gpu_ids": [
+      0
+    ],
+    "tensor_parallel_size": 1,
+    "dtype": "bfloat16",
+    "attention_backend": "FLASH_ATTN"
+  },
+  "replay": {
+    "arms": [
+      "full",
+      "strict_prefix",
+      "blend"
+    ],
+    "policy": "window",
+    "repair_ratio": 0.1,
+    "writeback": "original_only",
+    "max_model_len": 32768,
+    "max_output_tokens": 32,
+    "seed": 17,
+    "max_num_seqs": 8,
+    "concurrency": 1,
+    "rope_table_device_cache": true,
+    "group_contiguous_queries": true,
+    "per_session_cache_clear": true,
+    "cold_start_model_warmup": 2
+  },
+  "instrumentation": {
+    "mode": "host-only",
+    "torch_profiler": false,
+    "full_vocabulary_logprobs": false,
+    "phase_scope": "host_elapsed over generate call; descriptive only, not GPU-ms or TTFT decomposition"
+  },
+  "review": {
+    "path": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/CODE_REVIEW_HOST_ONLY.md",
+    "verdict": "PASS_WITH_WARNINGS",
+    "required_fixes_open": 0
+  },
+  "expected_output_dir": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only",
+  "status": "completed",
+  "run_started_local": "2026-10-10T13:07:27+08:00",
+  "run_script": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/run-service-phase-120.sh",
+  "run_finished_local": "2026-10-10T13:12:59+08:00",
+  "analysis_script_sha256": "733a0b2c13eec23feb6d0cf01b714c27cf718bf349df329f5396deb1f9419c9e",
+  "analysis_output_dir": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only/analysis-final",
+  "arm_results": {
+    "full": {
+      "requests": 120,
+      "correct": 118,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "05b870a33cd3140608b8a206231925e9e47cbf3533b966bf48f597afd515cbc9",
+      "phase_map_sha256": "8a2e639bd489b71980e0a8dd5f522291726df0afe3fc4a969359bbcb072f9f57",
+      "log_sha256": "13d0b7095a0dfa391e216a71a184d62dfda7e7d9b5ced357c74b3debd1abbf2b"
+    },
+    "strict-prefix": {
+      "requests": 120,
+      "correct": 118,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "3f95ade4ab06816fe09d3fa8f855b7b835c1159a682f9fbf9c9dcaa73e94d0ff",
+      "phase_map_sha256": "3715c1fe5e6d24dea7c5047944b624a7db194660a2bcf065890225319c97eddf",
+      "log_sha256": "5500005ef2c3fd25429dc4cb6a3b9f33e9cc21104957c2a9be423f5b40b947d5"
+    },
+    "blend-window10": {
+      "requests": 120,
+      "correct": 117,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "c5725614a5262dfa5869dce26683f12bc8b3730135273c029ba3628740f9df35",
+      "phase_map_sha256": "15f165b031c05903967ba9cd8c4345c445d6cf57e61142c643a057cc3174fda9",
+      "log_sha256": "794e940578d6dd27358f973a2aa1783486d03f1885c58a1713b4d21a6c221eba"
+    }
+  },
+  "analysis_result": {
+    "full_accuracy": 98.33333333333333,
+    "strict_prefix_accuracy": 98.33333333333333,
+    "blend_accuracy": 97.5,
+    "blend_quality_loss_pp": 0.8333333333333334,
+    "blend_quality_loss_upper95_pp": 2.5000000000000004,
+    "strict_prefix_ttft_with_context_p95_s": 1.0192114446777842,
+    "blend_ttft_with_context_p95_s": 2.54525996055454,
+    "blend_p95_improvement_vs_strict_prefix_percent": -149.72835360568428,
+    "joint_gate": "not_met"
+  },
+  "gpu_release_snapshot_path": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/GPU_RELEASE_AFTER_RUN.txt",
+  "gpu_release_snapshot": "0, 0 MiB, 0 %\n1, 0 MiB, 0 %\n2, 0 MiB, 0 %\n3, 0 MiB, 0 %",
+  "analysis_artifacts": {
+    "plot_script": "/home/bumi/git/PrismServe/experiments/agent_memory_kv_service_phase/plot_quality_latency.py",
+    "plot_script_sha256": "229f7b35e6a0e04a33bf207c7c331b03f44c10336b2d14ddb8908245d67e2a74",
+    "summary_json": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only/analysis-final/summary.json",
+    "summary_sha256": "a869d2f707c67fa3e645047b9cbea8b6c9b9521e5e551e8888bc3fca4d35c469",
+    "report_md": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only/analysis-final/HOST_PHASE_REPORT.md",
+    "report_sha256": "181bcd0c043d54239dc86330694e41f7bbed4e858fcb033658ffebe755c99936",
+    "figure_png": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only/analysis-final/figures-final2/quality-latency.png",
+    "figure_png_sha256": "2638fcf1e9cef507efbabe48edc32b632a7a96003183531ab306da7152e9eeba",
+    "figure_svg": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/paired-120-host-only/analysis-final/figures-final2/quality-latency.svg",
+    "figure_svg_sha256": "a8c133b35a6f40b413dc4137be8c0daf34ce8c1c95a626116d7b1e81cb515f02"
+  },
+  "independent_audit": {
+    "report": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/EXPERIMENT_AUDIT_SERVICE_PHASE.md",
+    "json": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/EXPERIMENT_AUDIT_SERVICE_PHASE.json",
+    "verdict": "PASS_WITH_WARNINGS",
+    "deterministic_checks": "6386/6386",
+    "semantic_review": "same-family/provisional",
+    "historical_uninstrumented_output_agreement": "120/120 exact sequence per arm",
+    "historical_timing_caveat": "observed P95 delta <0.14%; native grouped flag differed for Full/Strict and nonrandomized runs cannot isolate instrumentation overhead",
+    "teardown_caveat": "saved empty-GPU snapshot exists; Blend supervisor used SIGTERM after teardown; snapshot has no timestamp/command/PID listing"
+  }
+}

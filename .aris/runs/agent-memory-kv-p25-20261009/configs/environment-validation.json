@@ -1,0 +1,11 @@
+{
+  "env_spec_sha256": "331bb1f058c01a54a0e894acd71cd421f046f7074171a53d00e28ab015764a52",
+  "state": "ready_for_limited_qwen3_8b_mechanism_experiments",
+  "independent_witness": "logs/environment-witness.json",
+  "Qwen3_8B_real_inference": true,
+  "Qwen3_14B_real_inference": false,
+  "Qwen3_5_9B_real_inference": false,
+  "production_quality_validated": false,
+  "performance_gate_validated": false,
+  "additional_native_model_checks": "results/model-smoke-validation.json; small controlled native-only scope"
+}

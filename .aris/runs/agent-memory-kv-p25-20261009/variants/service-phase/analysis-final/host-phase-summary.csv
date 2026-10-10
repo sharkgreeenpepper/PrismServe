@@ -1,0 +1,19 @@
+arm,stage,requests_covered,event_count,p50_inclusive_sum_ms,p95_inclusive_sum_ms,p99_inclusive_sum_ms,semantics
+full,kv_lookup,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+full,kv_transfer,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+full,kv_store,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+full,selective_recompute,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+full,native_model_forward,120,720,304.747924,1007.9168673000001,1015.8440196399999,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+full,first_token_sampling,120,720,12.009580500000002,32.387143,32.591219849999995,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,kv_lookup,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,kv_transfer,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,kv_store,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,selective_recompute,0,0,,,,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,native_model_forward,120,720,158.9728225,427.95933464999973,1010.15854736,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+strict-prefix,first_token_sampling,120,720,5.1181705,15.550073399999992,32.297260179999995,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,kv_lookup,120,120,1.3604284999999998,2.3304245999999997,2.73482106,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,kv_transfer,86,3354,117.22502099999997,1004.8224,2213.06450735,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,kv_store,88,3344,0.41040350000000003,1272.0710383999997,2560.2789443199995,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,selective_recompute,86,3182,41.08471,162.1680085,298.5667767500001,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,native_model_forward,120,720,95.504912,1364.8461072999999,2676.70385928,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition
+blend-window10,first_token_sampling,120,720,1.7094780000000003,8.476856,8.514837170000002,host elapsed spans; inclusive/possibly nested; not GPU-ms or TTFT decomposition

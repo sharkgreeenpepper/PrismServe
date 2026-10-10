@@ -1,0 +1,56 @@
+{
+  "audit_skill": "experiment-audit",
+  "date": "2026-10-10",
+  "auditor": "gpt-6.1-sol fresh agent",
+  "auditor_task": "/root/qwen14_integrity_audit",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "overall_verdict": "ERROR",
+  "integrity_status": "blocked",
+  "reason_code": "reviewer_usage_limit_before_final_verdict",
+  "summary": "Partial read-only audit reported 81,206 deterministic checks with zero discrepancies, but final A-F verdict and hash sweep were not delivered because the reviewer hit its usage limit.",
+  "completed_checks": {
+    "deterministic_checks_reported": "81206",
+    "reported_mismatches": 0,
+    "fixture_rows_regenerated": 120,
+    "invalid_identity_probes_rejected": 7,
+    "analysis_artifacts_regenerated_byte_for_byte": 7,
+    "raw_files_changed_during_review": false
+  },
+  "checks": {
+    "gt_provenance": {
+      "status": "partial_pass",
+      "details": "Reviewer reported targets regenerated from seeded synthetic fixture facts and not derived from model outputs; final report absent."
+    },
+    "score_normalization": {
+      "status": "partial_pass",
+      "details": "Reviewer reported accuracy, bootstrap and metrics recomputed; final audit sweep absent."
+    },
+    "result_existence": {
+      "status": "partial_pass",
+      "details": "All listed artifacts reportedly existed; 81,206 scalar/identity/event/CSV checks had no mismatch; final hashes incomplete."
+    },
+    "dead_code": {
+      "status": "not_finalized",
+      "details": "No final A-F response due usage limit."
+    },
+    "scope": {
+      "status": "warn",
+      "details": "Synthetic calibration; 120 requests per arm; fixed order; one seed/GPU; no production trace or holdout."
+    },
+    "eval_type": "synthetic_proxy"
+  },
+  "claims": [
+    {
+      "id": "14B calibration accuracy/timing",
+      "impact": "supported_by_partial_checks; final independent verdict pending"
+    },
+    {
+      "id": "production quality or Go",
+      "impact": "unsupported"
+    }
+  ],
+  "lineage_note": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/service-phase/RUN_MANIFEST_AMENDMENT_20261010.md",
+  "generated_at": "2026-10-10T14:00:00+08:00",
+  "audited_inputs_unchanged": "reviewer reported yes; final hash list unavailable"
+}
