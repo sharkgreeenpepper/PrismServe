@@ -1,0 +1,26 @@
+{
+  "reviewer_model": "gpt-6.1-sol",
+  "initial_verdict": "FAIL",
+  "final_verdict": "PASS_WITH_WARNINGS",
+  "required_fixes_open": 0,
+  "initial_blockers": [
+    "summary narrative incorrectly hardcoded 8B gate result",
+    "raw-result validation lacked arm/model/session identity checks"
+  ],
+  "fixes": [
+    "gate decision now derives each failure clause from computed bootstrap upper95 and P95 improvement; the stage-C engineering threshold is >=10% P95 improvement",
+    "analyzer validates canonical arm, expected model path, source session, query span, policy and repair ratio",
+    "runner refuses any non-empty output directory and passes seed 17 explicitly"
+  ],
+  "verified": [
+    "positive/negative metric gate combinations",
+    "wrong model path, arm, session, query span, policy and ratio are rejected; valid records pass",
+    "all 11 source hashes and frozen input hash match refreshed manifest",
+    "GPU0 BF16 TP1, host-only, window10, 32 output tokens and per-session cache reset alignment"
+  ],
+  "warnings": [
+    "synthetic calibration, not production traces or holdout",
+    "fixed arm order and single physical GPU",
+    "host elapsed spans may be nested and include decode; no GPU-ms/transfer bytes/HBM peak"
+  ]
+}

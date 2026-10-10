@@ -1,0 +1,252 @@
+{
+  "full": {
+    "requests": 120,
+    "accuracy_percent": 98.33333333333333,
+    "correct": 118,
+    "incorrect": 2,
+    "output_token_agreement_full_percent": 100.0,
+    "ttft_s": {
+      "p50": 0.6801731586456299,
+      "p95": 2.6181662559509276,
+      "p99": 2.639060606956482
+    },
+    "ttft_with_context_s": {
+      "p50": 0.6801741915987805,
+      "p95": 2.618167588522192,
+      "p99": 2.6390622078976596
+    },
+    "e2e_s": {
+      "p50": 0.7470362159656361,
+      "p95": 2.686427983210888,
+      "p99": 2.707483214479871
+    },
+    "tokens_skipped_by_engine_prefix": 0,
+    "blend_repair_requests": 0,
+    "repair_tokens": 0,
+    "mandatory_tokens": 0,
+    "reusable_tokens": 0,
+    "host_stages": {
+      "kv_lookup": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "kv_transfer": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "kv_store": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "selective_recompute": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "native_model_forward": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 304.747924,
+          "p95": 1007.9168673000001,
+          "p99": 1015.8440196399999
+        }
+      },
+      "first_token_sampling": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 12.009580500000002,
+          "p95": 32.387143,
+          "p99": 32.591219849999995
+        }
+      }
+    },
+    "GPU_ms_measured": null,
+    "transfer_bytes_measured": null,
+    "peak_HBM_measured": null,
+    "p95_ttft_with_context_improvement_vs_strict_prefix_percent": -156.8816904670753,
+    "quality_loss_vs_full_pp": 0.0,
+    "paired_session_bootstrap": {
+      "session_count": 24,
+      "loss_pp": 0.0,
+      "one_sided_upper95_pp": 0.0,
+      "bootstrap": "10,000 paired session resamples; descriptive calibration only"
+    }
+  },
+  "strict-prefix": {
+    "requests": 120,
+    "accuracy_percent": 98.33333333333333,
+    "correct": 118,
+    "incorrect": 2,
+    "output_token_agreement_full_percent": 100.0,
+    "ttft_s": {
+      "p50": 0.2819455862045288,
+      "p95": 1.0192105293273916,
+      "p99": 2.622990782260895
+    },
+    "ttft_with_context_s": {
+      "p50": 0.2819465728243813,
+      "p95": 1.0192114446777842,
+      "p99": 2.622991832108237
+    },
+    "e2e_s": {
+      "p50": 0.34902226657141,
+      "p95": 1.087773011927492,
+      "p99": 2.6934260726021604
+    },
+    "tokens_skipped_by_engine_prefix": 473104,
+    "blend_repair_requests": 0,
+    "repair_tokens": 0,
+    "mandatory_tokens": 0,
+    "reusable_tokens": 0,
+    "host_stages": {
+      "kv_lookup": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "kv_transfer": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "kv_store": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "selective_recompute": {
+        "requests_covered": 0,
+        "event_count": 0,
+        "inclusive_event_sum_ms_per_request": null
+      },
+      "native_model_forward": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 158.9728225,
+          "p95": 427.95933464999973,
+          "p99": 1010.15854736
+        }
+      },
+      "first_token_sampling": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 5.1181705,
+          "p95": 15.550073399999992,
+          "p99": 32.297260179999995
+        }
+      }
+    },
+    "GPU_ms_measured": null,
+    "transfer_bytes_measured": null,
+    "peak_HBM_measured": null,
+    "p95_ttft_with_context_improvement_vs_strict_prefix_percent": 0.0,
+    "quality_loss_vs_full_pp": 0.0,
+    "paired_session_bootstrap": {
+      "session_count": 24,
+      "loss_pp": 0.0,
+      "one_sided_upper95_pp": 0.0,
+      "bootstrap": "10,000 paired session resamples; descriptive calibration only"
+    }
+  },
+  "blend-window10": {
+    "requests": 120,
+    "accuracy_percent": 97.5,
+    "correct": 117,
+    "incorrect": 3,
+    "output_token_agreement_full_percent": 97.5,
+    "ttft_s": {
+      "p50": 0.38140881061553955,
+      "p95": 2.54475964307785,
+      "p99": 2.679618649482727
+    },
+    "ttft_with_context_s": {
+      "p50": 0.38186484307516366,
+      "p95": 2.54525996055454,
+      "p99": 2.680122799843084
+    },
+    "e2e_s": {
+      "p50": 0.4502685696352273,
+      "p95": 2.6144436770235187,
+      "p99": 2.7489103724434973
+    },
+    "tokens_skipped_by_engine_prefix": 506395,
+    "blend_repair_requests": 86,
+    "repair_tokens": 37458,
+    "mandatory_tokens": 131471,
+    "reusable_tokens": 374924,
+    "host_stages": {
+      "kv_lookup": {
+        "requests_covered": 120,
+        "event_count": 120,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 1.3604284999999998,
+          "p95": 2.3304245999999997,
+          "p99": 2.73482106
+        }
+      },
+      "kv_transfer": {
+        "requests_covered": 86,
+        "event_count": 3354,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 117.22502099999997,
+          "p95": 1004.8224,
+          "p99": 2213.06450735
+        }
+      },
+      "kv_store": {
+        "requests_covered": 88,
+        "event_count": 3344,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 0.41040350000000003,
+          "p95": 1272.0710383999997,
+          "p99": 2560.2789443199995
+        }
+      },
+      "selective_recompute": {
+        "requests_covered": 86,
+        "event_count": 3182,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 41.08471,
+          "p95": 162.1680085,
+          "p99": 298.5667767500001
+        }
+      },
+      "native_model_forward": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 95.504912,
+          "p95": 1364.8461072999999,
+          "p99": 2676.70385928
+        }
+      },
+      "first_token_sampling": {
+        "requests_covered": 120,
+        "event_count": 720,
+        "inclusive_event_sum_ms_per_request": {
+          "p50": 1.7094780000000003,
+          "p95": 8.476856,
+          "p99": 8.514837170000002
+        }
+      }
+    },
+    "GPU_ms_measured": null,
+    "transfer_bytes_measured": null,
+    "peak_HBM_measured": null,
+    "p95_ttft_with_context_improvement_vs_strict_prefix_percent": -149.72835360568428,
+    "quality_loss_vs_full_pp": 0.8333333333333334,
+    "paired_session_bootstrap": {
+      "session_count": 24,
+      "loss_pp": 0.8333333333333334,
+      "one_sided_upper95_pp": 2.5000000000000004,
+      "bootstrap": "10,000 paired session resamples; descriptive calibration only"
+    }
+  }
+}

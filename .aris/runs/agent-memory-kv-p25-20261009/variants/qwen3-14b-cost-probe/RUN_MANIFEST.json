@@ -1,0 +1,270 @@
+{
+  "status": "completed",
+  "created_local": "2026-10-10T13:24:36+0800",
+  "purpose": "P2.5 stage C model-scale sensitivity cost probe; Qwen3-14B Full vs Strict Prefix vs CacheBlend window10",
+  "model": "Qwen3-14B",
+  "model_path": "/home/bumi/infra/models/agent-memory-kv-p25-20261009/Qwen3-14B",
+  "model_weights_lock": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/configs/Qwen3-14B-weights.lock.json",
+  "model_weights_lock_sha256": "1e19ade4101b8750f3a6c288e4dbe550f25b9aee22f8a51f3cf10bdc0182ba05",
+  "model_config_sha256": "e73c3664ca09b10a673fef0c22e8a6b456201d49bd4713c9691f775720e8857a",
+  "tokenizer_sha256": {
+    "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101"
+  },
+  "input_path": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/data/controlled-calibration-120-inputs/paired-inputs.jsonl",
+  "input_sha256": "52d4ddf256273a3973b15133c1fd2626b9522115a308ec77fb48f9c94de594bb",
+  "input_rows": 120,
+  "input_prompt_max_tokens": 18702,
+  "input_origin": "synthetic controlled calibration; same token IDs and independent synthetic fact labels as Qwen3-8B service run; no production L1/L3 trace",
+  "lmcache_config": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/configs/blend.yaml",
+  "lmcache_config_sha256": "188e8cdec386f87806c55a8aea781ebc1004d742ba2f9348820b966773d5122b",
+  "source_sha256": {
+    "experiments/agent_memory_kv_service_phase/__init__.py": "0bda5da9d1dc7f342e22ecf77925cf3bdf00f95053124bfc3e29d166146312f3",
+    "experiments/agent_memory_kv_service_phase/analyze_calibration.py": "014bf2feed484fad8a2ab9773abb51616409d6be6964ad8883cbd5697eef6945",
+    "experiments/agent_memory_kv_service_phase/analyze_model_scaling.py": "40053cfbe80ae5d7b8efca84a31b610c8b4d33b00c470957348660d02a4c4c9a",
+    "experiments/agent_memory_kv_service_phase/analyze_phase_smoke.py": "bab29ed75395557ef53c42fcad241e111d6e47fa82027e72c28a23bea6aa3766",
+    "experiments/agent_memory_kv_service_phase/analyze_profiles.py": "f96d5e62d89a7b981d6bc06a37695adbf19e654956beff3152de4fd83e51c5a7",
+    "experiments/agent_memory_kv_service_phase/analyze_service_phase.py": "733a0b2c13eec23feb6d0cf01b714c27cf718bf349df329f5396deb1f9419c9e",
+    "experiments/agent_memory_kv_service_phase/attribute_cuda_phases.py": "621eac23cf60889000d1f312d3673f500a3124825e25d648a4fef0b7e6e172a9",
+    "experiments/agent_memory_kv_service_phase/bumi_adapter.py": "d6f9663489e4ea2f06a7028ce024c869292ff2777adbfda6e5f81c9239ed6d14",
+    "experiments/agent_memory_kv_service_phase/causal_flash.py": "2ede26263216c88e858f529daa674205306833705f362514e939805bac864a04",
+    "experiments/agent_memory_kv_service_phase/contracts.py": "0d10ba57b4d2fb1108088a078dbe3c24153e02028e09b139cc682c597b1103ca",
+    "experiments/agent_memory_kv_service_phase/download_models.py": "12727b4a1abd9d28247740363992e6fd11452801401824bd2d08152f93e966b0",
+    "experiments/agent_memory_kv_service_phase/engine_bridge.py": "c775f6e1502038d179b0c6c7c29491a75721cdc00c4ba41ec9bb23bec6effd88",
+    "experiments/agent_memory_kv_service_phase/local_queue.py": "e87d628a552ab5c808d084c8e43689f73169bbb0902bcf48c93f89671d62fa62",
+    "experiments/agent_memory_kv_service_phase/make_workload.py": "5ebc759c0d1434911305efed8f17293d9093f478793c080047dec0a87bf2716a",
+    "experiments/agent_memory_kv_service_phase/model_scale_report.py": "cafe2e007eb54246c4e5e3cd6678f5de4187008fc35d7e9bdff4665277f310aa",
+    "experiments/agent_memory_kv_service_phase/packed_kv.py": "99787b45344fb1536f4a1a90289c744c1168b3cf69f1398c5514f9b31a9a8af7",
+    "experiments/agent_memory_kv_service_phase/phase_hooks.py": "f25d7e09cc3f805dde12b3d7cbe7db03e3cb7bbbb8cd5fd889dfe762543f6839",
+    "experiments/agent_memory_kv_service_phase/plot_model_scale.py": "5d266d160e5f9c83e3c8f00c1c0c121b4ed45bb6d7b33518575bbd6497bcb70f",
+    "experiments/agent_memory_kv_service_phase/plot_quality_latency.py": "229f7b35e6a0e04a33bf207c7c331b03f44c10336b2d14ddb8908245d67e2a74",
+    "experiments/agent_memory_kv_service_phase/prepare.py": "c371028ade12381db044ce4b1a38f7a21f4f52bdf71df67139fdc152af73e6ca",
+    "experiments/agent_memory_kv_service_phase/profile_replay.py": "e8d103d83cc5e5ceb5c16e3659c642d569da4356c75b97fa14ce18943f9940e5",
+    "experiments/agent_memory_kv_service_phase/repair_selectors.py": "e27eb26b34f235b34fccf0c5dbc24a5f0d46a01d915f0ab0c2cff0e5bca71c6b",
+    "experiments/agent_memory_kv_service_phase/run_replay.py": "ddcef80c6697b43cbeb78d1cf712b456f63a2ac710377f1f3cfd5bfd1b61339b",
+    "experiments/agent_memory_kv_service_phase/supervise.py": "7dfc91d6a4c18f47dd5c94d82538ea93bedc6571b67694e063a3e6a8a2f10d0a",
+    "experiments/agent_memory_kv_service_phase/test_contracts.py": "ca17b204ce17f48d74ae3efbaa535287933c95cb90cf7e82fc8305fac92f6976",
+    "experiments/agent_memory_kv_service_phase/timing.py": "6f5b6ab170195cb0e2343e4d2d546e6085147a742d1719e0dc85b5b2c820ddd8",
+    "experiments/agent_memory_kv_service_phase/witness_grouped.py": "5e888a230eb3eca290f3c090ffe086ae25d6605968a0b21b801767b5c29c397f",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/run-qwen3-14b-cost-probe.sh": "b7b6d6ef77ca45d64ff6fad6ca7b42be34456ded8e6b6c6b6be2bb84308afdca",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/activate.sh": "23143ef89f3179faf85937820a04186f08ce92be3109c7d0f92a2e3521781d42"
+  },
+  "runtime": {
+    "python": "3.10.12",
+    "torch": "2.13.0+cu129",
+    "vllm": "0.30.0+cu129",
+    "lmcache": "0.5.5",
+    "transformers": "5.17.0"
+  },
+  "device_policy": {
+    "physical_gpu_ids": [
+      0
+    ],
+    "tensor_parallel_size": 1,
+    "dtype": "bfloat16",
+    "attention_backend": "FLASH_ATTN"
+  },
+  "replay": {
+    "arms": [
+      "full",
+      "strict_prefix",
+      "blend-window10"
+    ],
+    "policy": "window",
+    "repair_ratio": 0.1,
+    "writeback": "original_only",
+    "max_model_len": 32768,
+    "max_output_tokens": 32,
+    "seed": 17,
+    "max_num_seqs": 8,
+    "concurrency": 1,
+    "rope_table_device_cache": true,
+    "group_contiguous_queries": true,
+    "per_session_cache_clear": true,
+    "cold_start_model_warmup": 2,
+    "order": [
+      "full",
+      "strict_prefix",
+      "blend-window10"
+    ]
+  },
+  "instrumentation": {
+    "mode": "host-only",
+    "torch_profiler": false,
+    "full_vocabulary_logprobs": false,
+    "scope": "host elapsed around generate; nested/inclusive and includes decode; descriptive only"
+  },
+  "outputs": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only",
+  "limitations": [
+    "single GPU and fixed arm order; not randomized",
+    "synthetic calibration, no holdout and no production trace",
+    "host stages are not GPU-ms or a TTFT decomposition",
+    "GPU transfer bytes not measured"
+  ],
+  "review": {
+    "status": "PASS_WITH_WARNINGS",
+    "reviewer_model": "gpt-6.1-sol",
+    "required_fixes_open": 0,
+    "report": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/CODE_REVIEW_QWEN3_14B.md",
+    "json": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/CODE_REVIEW_QWEN3_14B.json"
+  },
+  "preflight": {
+    "bash_n": "pass",
+    "analyzer_py_compile": "pass",
+    "negative_cross_model_validation": "pass; Qwen3-8B replay rejected under Qwen3-14B model path before output creation",
+    "tokenizer_identity": "Qwen3-8B and Qwen3-14B tokenizer.json and tokenizer_config.json SHA256 identical"
+  },
+  "git_commit": "03a04ccf507848a52229529399dd72237df0bf93",
+  "model_geometry": {
+    "layers": 40,
+    "full_attention_layers": 40,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "dtype_bytes": 2,
+    "kv_bytes_per_token_bf16": 163840,
+    "hybrid": false
+  },
+  "sanity": {
+    "requests": 4,
+    "correct": 4,
+    "phase_maps": 4,
+    "all_maps_ok": true,
+    "log": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/sanity-host-only/full.log",
+    "gpu_released_after": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/sanity-gpu-after.txt"
+  },
+  "run_started_local": "2026-10-10T13:31:06+08:00",
+  "run_finished_local": "2026-10-10T13:39:46+08:00",
+  "run_script": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/run-qwen3-14b-cost-probe.sh",
+  "run_script_sha256": "b7b6d6ef77ca45d64ff6fad6ca7b42be34456ded8e6b6c6b6be2bb84308afdca",
+  "arm_results": {
+    "full": {
+      "requests": 120,
+      "correct": 120,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "5fd1305e1e90fc673ffcac46d2bb66f0676341e098fbd972168f476b3b292e68",
+      "phase_map_sha256": "5ccedb94f21b17a602cf83f6e1bf1d0d1c8a8003c6077fa5fc3a0b2da8d1d3c8",
+      "log_sha256": "8dec0cf3c64bff9401074c9107041e8addc5d9cd7fd1717577c8a806bbd47f64",
+      "output_token_agreement_full_percent": 100.0,
+      "ttft_p50_p95_p99_s": {
+        "p50": 1.2375744581222534,
+        "p95": 4.540848112106323,
+        "p99": 4.575807204246521
+      },
+      "ttft_with_context_p95_s": 4.540849463071209,
+      "e2e_p95_s": 4.616824242565781,
+      "engine_skipped_tokens": 0,
+      "repair_requests": 0,
+      "repair_tokens": 0,
+      "mandatory_prefix_tokens": 0,
+      "reusable_tokens": 0,
+      "quality_loss_vs_full_pp": 0.0,
+      "quality_loss_upper95_pp": 0.0
+    },
+    "strict-prefix": {
+      "requests": 120,
+      "correct": 120,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "fba8f5c6395136d1a345a93c1acfdd0021948b32e3c56cd80753fceb157570f5",
+      "phase_map_sha256": "9851d3c8807f84ac02d9d3eadfc881c464a88338b237fd55e75be16035b4550b",
+      "log_sha256": "71c0af28974cba877a977b1e56f56acb9b631d20b18d93a77d0f4a164a518d4c",
+      "output_token_agreement_full_percent": 100.0,
+      "ttft_p50_p95_p99_s": {
+        "p50": 0.5105111598968506,
+        "p95": 1.839310741424559,
+        "p99": 4.575012288093567
+      },
+      "ttft_with_context_p95_s": 1.8393119608284891,
+      "e2e_p95_s": 1.9134305727900922,
+      "engine_skipped_tokens": 473104,
+      "repair_requests": 0,
+      "repair_tokens": 0,
+      "mandatory_prefix_tokens": 0,
+      "reusable_tokens": 0,
+      "quality_loss_vs_full_pp": 0.0,
+      "quality_loss_upper95_pp": 0.0
+    },
+    "blend-window10": {
+      "requests": 120,
+      "correct": 120,
+      "errors": 0,
+      "phase_maps": 120,
+      "raw_sha256": "d5edf1a7a665e26c5dab38cb5fdc022f515bb2569875d0e4d94853304dfe7802",
+      "phase_map_sha256": "4df169973db445908cfdb2659c7c9911b65df5c08a42fc127ebed7baf682d80a",
+      "log_sha256": "877e2aec65ede42c7c4598e10fee6df1e7fd9212fdce8a5ebe9c0cb8195ae1d0",
+      "output_token_agreement_full_percent": 100.0,
+      "ttft_p50_p95_p99_s": {
+        "p50": 0.6523092985153198,
+        "p95": 4.388388359546661,
+        "p99": 4.622675361633301
+      },
+      "ttft_with_context_p95_s": 4.388901286432519,
+      "e2e_p95_s": 4.468456539744511,
+      "engine_skipped_tokens": 506395,
+      "repair_requests": 86,
+      "repair_tokens": 37458,
+      "mandatory_prefix_tokens": 131471,
+      "reusable_tokens": 374924,
+      "quality_loss_vs_full_pp": 0.0,
+      "quality_loss_upper95_pp": 0.0
+    }
+  },
+  "analysis_result": {
+    "full_accuracy": 100.0,
+    "strict_prefix_accuracy": 100.0,
+    "blend_accuracy": 100.0,
+    "blend_quality_loss_pp": 0.0,
+    "blend_quality_loss_upper95_pp": 0.0,
+    "strict_prefix_ttft_with_context_p95_s": 1.8393119608284891,
+    "blend_ttft_with_context_p95_s": 4.388901286432519,
+    "blend_p95_improvement_vs_strict_prefix_percent": -138.61647071851846,
+    "blend_p95_ratio_vs_strict_prefix": 2.3861647071851846,
+    "joint_gate": "not_met"
+  },
+  "resource_observation": {
+    "physical_gpu_ids": [
+      0
+    ],
+    "nvidia_smi_sampling_period_s": 1,
+    "sampled_gpu0_memory_max_mib": 60277,
+    "sampled_gpu0_utilization_max_percent": 100,
+    "sampled_gpu0_utilization_median_percent": 100.0,
+    "gpu_ms_measured": null,
+    "physical_transfer_bytes_measured": null,
+    "post_run_release_snapshot": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/gpu-release.txt",
+    "gpu0_sample_file": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/gpu0-samples.csv",
+    "gpu0_sample_file_sha256": "dbfc2e7933a0f21453ddf0985ab3541bb46fa47c042b1eb8eb6410358e57787c",
+    "snapshot_hashes": {
+      "gpu-before.txt": "cd8425e1ccfd5ecac32b5a00e4705c376a69d2003446ad9938ccc6bc492b2444",
+      "gpu-after-full.txt": "cd8425e1ccfd5ecac32b5a00e4705c376a69d2003446ad9938ccc6bc492b2444",
+      "gpu-after-strict-prefix.txt": "cd8425e1ccfd5ecac32b5a00e4705c376a69d2003446ad9938ccc6bc492b2444",
+      "gpu-after-blend-window10.txt": "cd8425e1ccfd5ecac32b5a00e4705c376a69d2003446ad9938ccc6bc492b2444",
+      "gpu-release.txt": "cd8425e1ccfd5ecac32b5a00e4705c376a69d2003446ad9938ccc6bc492b2444"
+    }
+  },
+  "analysis_artifacts": {
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/analysis-final/summary.json": "32273d3e335020ffa6b643a72c7a17e2d6cebcf0794ece1802f54d676d6effc3",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/analysis-final/HOST_PHASE_REPORT.md": "ab1ff985a1911a5c63b9f8bc4e7e6d27b10d37c943f868cba9355b1b6fd5737a",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/analysis-final/paired-request-metrics.csv": "7ac61321416f81883acc28bdd2f44a3947e60a4e13136a8c1be4942992574e83",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/analysis-final/host-phase-summary.csv": "de625fc15d3b237853620a9ee8286e6e957d77e4ab474b8b86c7dc176fa8ea31",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/paired-120-host-only/analysis-final/quality-errors.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/CODE_REVIEW_QWEN3_14B.md": "dfe1307f6d3da02deed1e65581b54bff2d3581d4e84c839334bd3db06280c4d9",
+    ".aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/CODE_REVIEW_QWEN3_14B.json": "ed6e0a616f0d16f2e15e981f57806b0cb1731813c3d35e3fd4d58a712ec6e2de",
+    ".aris/runs/agent-memory-kv-p25-20261009/analysis-model-scale-final2/MODEL_SCALE_REPORT.md": "a35b84fb1c09d5e034828efb160aac9f6f8b382dadc4839ca85273e760eff9f6",
+    ".aris/runs/agent-memory-kv-p25-20261009/analysis-model-scale-final2/model-scale-comparison.csv": "c5a8ed1e920ae7ca3585a5ce9d7fcbabeffcba6e6b504a8b1b9d0e1e32876333",
+    ".aris/runs/agent-memory-kv-p25-20261009/analysis-model-scale-final2/figures/model-scale-quality-latency.png": "b5704cf0487a1ae02968555031baac12a91c727e8e439212a149c8ebeed86740",
+    ".aris/runs/agent-memory-kv-p25-20261009/analysis-model-scale-final2/figures/model-scale-quality-latency.svg": "4d8b7cd038ceff30b89c5d2cc3b9f35277c6fdb4d079e8277c50d132447d3af1"
+  },
+  "interpretation_limit": "Calibration only; host elapsed spans are inclusive/nested and include complete generate call; sampled HBM is not exact peak; software-reported LMCache sizes are not physical bus bytes.",
+  "integrity_audit": {
+    "status": "ERROR_PARTIAL_REVIEW",
+    "reviewer_model": "gpt-6.1-sol",
+    "partial_checks_reported": 81206,
+    "reported_mismatches": 0,
+    "final_verdict_available": false,
+    "reason": "reviewer hit usage limit before final A-F verdict and final hash sweep",
+    "report": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/EXPERIMENT_AUDIT_QWEN3_14B.md",
+    "json": "/home/bumi/git/PrismServe/.aris/runs/agent-memory-kv-p25-20261009/variants/qwen3-14b-cost-probe/EXPERIMENT_AUDIT_QWEN3_14B.json"
+  }
+}
